@@ -5,40 +5,50 @@
 [![EEGNet](https://img.shields.io/badge/EEGNet-Compact%20ConvNet-00897B)](#)
 [![LOSO](https://img.shields.io/badge/Validation-Leave--One--Subject--Out-D32F2F)](#)
 
-A systematic, three-stage comparative study of **cross-subject generalization** in EEG-based motor imagery classification — from a naive single-subject baseline, through Leave-One-Subject-Out (LOSO) cross-validation of a hand-engineered pipeline, to an end-to-end deep learning approach with **EEGNet**.
+A systematic, three-stage study of **cross-subject generalization** in EEG-based motor imagery classification — from a single-subject baseline, through Leave-One-Subject-Out (LOSO) evaluation of a hand-engineered pipeline, to an end-to-end deep learning approach with **EEGNet**.
 
 ## 📌 Overview
 
-Motor imagery BCIs classify which movement a person is *imagining* purely from their EEG — a hard, noisy, low-SNR problem made even harder by the fact that no two brains produce the same signal for the same task. This project started as a single-subject notebook (~77% accuracy on one individual) and has since grown into a **full 3-notebook investigation** into the single biggest obstacle to deploying real-world BCIs: **inter-subject variability**.
+Motor imagery BCIs aim to classify which movement a person is *imagining* from EEG signals. The task is challenging because EEG is noisy, has a low signal-to-noise ratio, and varies substantially across individuals. This makes **inter-subject generalization** one of the main challenges for practical, calibration-free BCI systems.
 
-Across the three notebooks, the same core question is asked in three progressively more rigorous ways: *if I train on some subjects, how well does the model work on a subject it has never seen?*
+This project began as a single-subject experiment (~77% accuracy on one individual) and evolved into a **three-notebook investigation** of this generalization problem.
 
-| Approach | Validation Scheme | Mean Cross-Subject Accuracy | vs. Chance (25%) |
-|---|---|---|---|
-| Subject-dependent (WPD+CSP+MLP) | Zero-calibration transfer | 31.7% ± 7.4% | +6.7 pts |
-| LOSO Hybrid (WPD+CSP+MLP) | 9-fold LOSO | 40.1% ± 12.5% | +15.1 pts |
-| **LOSO EEGNet (zero-shot)** | 9-fold LOSO | **43.9% ± 14.0%** | **+18.9 pts** |
-| **LOSO EEGNet (fine-tuned)** | LOSO + 50% calibration | **47.6%** | **+22.6 pts** |
+Across the three notebooks, the same core question is examined with increasing methodological rigor:
 
-> 📄 **Full methodology, derivations, and discussion:** **[Read the complete report →](doc/report.pdf)**
-> 
+> *If a model is trained on some subjects, how well can it classify motor imagery for a subject it has never seen before?*
+
+Rather than optimizing for within-subject accuracy alone, this study evaluates how well each approach generalizes to unseen subjects under a consistent evaluation protocol.
+
+
+
+| Approach                        | Validation Scheme         | Mean Cross-Subject Accuracy | vs. Chance (25%) |
+| ------------------------------- | ------------------------- | --------------------------- | ---------------- |
+| Subject-dependent (WPD+CSP+MLP) | Zero-calibration transfer | 31.7% ± 7.4%                | +6.7 pts         |
+| LOSO Hybrid (WPD+CSP+MLP)       | 9-fold LOSO               | 40.1% ± 12.5%               | +15.1 pts        |
+| **LOSO EEGNet (zero-shot)**     | 9-fold LOSO               | **43.9% ± 14.0%**           | **+18.9 pts**    |
+| **LOSO EEGNet (fine-tuned)**    | LOSO + 50% calibration    | **47.6%**                   | **+22.6 pts**    |
+
+> 📄 **Full methodology, derivations, and discussion:** **[Read the complete report →](doc/Report.pdf)**
+>
 > 📁 **Dataset & download instructions:** **[Access data & GDF files →](data/README.md)**
-> 
+>
 > 🔬 **EEGNet architecture reference:** **[View Braindecode documentation →](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)**
 
 ---
 
 ## 🧬 The Core Problem: Inter-Subject Variability
 
-A classifier calibrated on one person's EEG encodes spatial filters and decision boundaries tied to *that individual's* anatomy and cognitive strategy — cortical folding, skull thickness, electrode placement, and the subject's own way of "imagining" a movement all differ from person to person. Applied to a new subject with **zero calibration**, performance frequently collapses toward chance level. This is the central obstacle to "plug-and-play" BCIs, and it's the obstacle this project measures, quantifies, and attempts to close.
+A classifier calibrated on one person's EEG can learn spatial filters and decision boundaries that are closely tied to that individual's recording characteristics and neural response patterns. Differences in anatomy, electrode placement, and motor imagery strategy can therefore create a substantial **domain shift** between subjects.
 
-A dedicated pairwise transfer-accuracy analysis makes the scale of the problem unmistakable:
+When such a model is applied to a completely unseen subject with **zero calibration**, performance can approach chance level. This project measures the size of this generalization gap and evaluates whether multi-subject training and signal alignment can reduce it.
 
-| | Within-Subject Accuracy | Cross-Subject Accuracy |
-|---|---|---|
-| CSP + Logistic Regression | **65.6%** | **25.4%** (≈ chance) |
+A dedicated pairwise transfer analysis illustrates the scale of the problem:
 
-Hand-engineered spatial filters fit on one subject's covariance structure essentially fail to transfer to a different subject's covariance structure *at all* — unless the training process explicitly pools subjects (LOSO) or applies signal alignment.
+|                           | Within-Subject Accuracy | Cross-Subject Accuracy |
+| ------------------------- | ----------------------: | ---------------------: |
+| CSP + Logistic Regression |               **65.6%** |   **25.4%** (≈ chance) |
+
+The large difference indicates that spatial filters learned from one subject's covariance structure do not transfer reliably to other subjects without additional adaptation.
 
 ---
 
@@ -50,7 +60,7 @@ Hybrid-EEG-Classifier-EEGNet/
 │   ├── raw/
 │   └── README.md          # Subject info + dataset download instructions
 ├── doc/
-│   └── Report.pdf          # Full methodology, results, and discussion
+│   └── Report.pdf         # Full methodology, results, and discussion
 ├── figures/
 ├── models/
 ├── notebooks/
@@ -66,46 +76,53 @@ Hybrid-EEG-Classifier-EEGNet/
 
 ## 📁 Dataset
 
-All three notebooks use the **[BCI Competition IV, Dataset 2a](https://www.bbci.de/competition/iv/#dataset2a)** (Brunner et al., 2008) — 9 subjects, 4 balanced motor imagery classes (left hand, right hand, feet, tongue), 22 EEG + 3 EOG channels at 250 Hz.
+All three notebooks use the **[BCI Competition IV, Dataset 2a](https://www.bbci.de/competition/iv/#dataset2a)** (Brunner et al., 2008): 9 subjects performing 4 balanced motor imagery tasks — left hand, right hand, feet, and tongue — recorded from 22 EEG and 3 EOG channels at 250 Hz.
 
-| Subjects | Classes | Trials / Subject | Channels | Sampling Rate |
-|---|---|---|---|---|
-| 9 (A01T–A09T) | Left / Right / Feet / Tongue | 288 (72/class, balanced) | 22 EEG + 3 EOG | 250 Hz |
+| Subjects      | Classes                      | Trials / Subject         | Channels       | Sampling Rate |
+| ------------- | ---------------------------- | ------------------------ | -------------- | ------------- |
+| 9 (A01T–A09T) | Left / Right / Feet / Tongue | 288 (72/class, balanced) | 22 EEG + 3 EOG | 250 Hz        |
 
-> 💡 The raw `.gdf` files are **not included** in this repository. See **[`data/README.md`](data/README.md)** for per-subject details and download instructions before running any notebook.
+> 💡 The raw `.gdf` files are **not included** in this repository. See **[`data/README.md`](data/README.md)** for subject-specific details and download instructions before running the notebooks.
 
 ---
 
 ## 🔬 Three-Stage Experimental Pipeline
 
 ### 1️⃣ Notebook 1 — Subject-Dependent Baseline
+
 📓 **[`notebooks/Hybrid-EEG-Classifier-WPD-CSP.ipynb`](notebooks/Hybrid-EEG-Classifier-WPD-CSP.ipynb)**
 
-The original hybrid pipeline — **Wavelet Packet Decomposition (WPD)** + **Filter-Bank Common Spatial Patterns (CSP)** + a **PyTorch MLP** — trained and validated *exclusively* on Subject 1 (A01T), then applied without any refitting to the other eight subjects.
+The original hybrid pipeline combines **Wavelet Packet Decomposition (WPD)**, **Filter-Bank Common Spatial Patterns (CSP)**, and a **PyTorch MLP**. It is trained and validated exclusively on Subject 1 (A01T), then applied to the remaining eight subjects without refitting.
 
-- ✅ Excellent **in-sample** performance: **75.9%** test accuracy / 0.760 macro-F1 on Subject 1's own held-out split.
-- ❌ Severe generalization collapse on unseen subjects: mean accuracy drops to **31.7% ± 7.4%** — a **44-point** gap between training and deployment performance, with some subjects (A06T, A09T) landing barely above the 25% chance level.
+* ✅ **Subject 1 performance:** **75.9%** test accuracy and **0.760** macro-F1.
+* ❌ **Cross-subject performance:** **31.7% ± 7.4%** mean accuracy on unseen subjects, a **44-point gap** relative to the within-subject result. Subjects such as A06T and A09T remain close to the 25% chance level.
 
-This notebook exists specifically to *quantify* the zero-calibration generalization gap before attempting to close it.
+The purpose of this notebook is to establish a subject-dependent baseline and quantify the zero-calibration generalization gap.
 
 ### 2️⃣ Notebook 2 — LOSO Cross-Validation with the Hybrid Algorithm
+
 📓 **[`notebooks/Hybrid-EEG-Classifier-WPD-CSP-LOSO.ipynb`](notebooks/Hybrid-EEG-Classifier-WPD-CSP-LOSO.ipynb)**
 
-The exact same WPD + CSP + MLP algorithm, but re-evaluated under a proper **Leave-One-Subject-Out (LOSO)** cross-validation protocol: on each of 9 folds, one subject is held out entirely and the pipeline is refit from scratch on the pooled remaining eight, with **Euclidean Alignment** added as a leakage-free cross-subject covariance-whitening step.
+The same **WPD + CSP + MLP** pipeline is evaluated using a proper **Leave-One-Subject-Out (LOSO)** protocol. In each of the 9 folds, one subject is held out completely while the pipeline is refit from scratch using the remaining eight subjects.
 
-- 📈 Mean LOSO accuracy improves to **40.1% ± 12.5%**, ahead of both the CSP+LogReg baseline (38.2%) and Notebook 1's unseen-subject average.
-- Pooling subjects during training forces spatial filters to compromise across individual covariance structures rather than overfitting to just one — a real but *modest* improvement, since averaging across 8 heterogeneous subjects is a compromise, not an adaptation.
+**Euclidean Alignment** is also included as a leakage-free covariance-alignment step to reduce inter-subject differences.
+
+* 📈 **Mean LOSO accuracy:** **40.1% ± 12.5%**
+* This outperforms the **CSP + Logistic Regression** baseline (**38.2%**) and the unseen-subject average from Notebook 1.
+* The improvement remains modest, highlighting the difficulty of learning a shared representation across heterogeneous subjects.
 
 ### 3️⃣ Notebook 3 — EEGNet with LOSO
+
 📓 **[`notebooks/EEGNet-LOSO.ipynb`](notebooks/EEGNet-LOSO.ipynb)**
 
-Replaces the entire hand-engineered feature pipeline with **[EEGNet](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)**, a compact end-to-end convolutional architecture purpose-built for EEG decoding, evaluated under the identical 9-fold LOSO protocol. EEGNet learns its own temporal filters (analogous to band-pass filtering) and spatial filters (analogous to CSP) directly from data, with no hand-engineered priors at all.
+The final stage replaces the hand-engineered feature pipeline with **[EEGNet](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)**, a compact end-to-end convolutional architecture designed for EEG decoding. It is evaluated under the same 9-fold LOSO protocol.
 
-- **Best cross-subject performance of all three approaches**: **43.9% ± 14.0%** mean LOSO accuracy, Cohen's **κ = 0.252**.
-- 🎯 A brief subject-specific fine-tuning step (10 epochs on just 50% of the target subject's own trials) pushes mean accuracy further to **47.6%**.
+EEGNet learns temporal and spatial filters directly from the EEG signal rather than relying on explicitly engineered WPD and CSP features.
 
-> ⚠️ **Hardware Constraint:** Due to CPU-only training, EEGNet was trained for only **40 epochs** (instead of the recommended 300+), meaning the model was **under-trained**. Despite this, it still outperforms the hand-engineered pipelines.
+* **Best zero-shot cross-subject performance:** **43.9% ± 14.0%** mean LOSO accuracy, with Cohen's **κ = 0.252**.
+* 🎯 **Subject-specific fine-tuning:** using 50% of the target subject's trials for 10 epochs increases mean accuracy to **47.6%**.
 
+> ⚠️ **Hardware Constraint:** Training was performed on a CPU-only setup, so EEGNet was limited to **40 epochs** rather than the **300+ epochs** used as the recommended training budget. The model was therefore likely under-trained, and the reported result should be interpreted in that context.
 
 ---
 
@@ -128,41 +145,45 @@ Replaces the entire hand-engineered feature pipeline with **[EEGNet](https://bra
 </tr>
 </table>
 
-The story across the three charts is monotonic: Notebook 1's summary shows just how sharply accuracy falls once the model leaves its trained subject, plotted against reference lines for chance level, in-sample accuracy, and the mean unseen-subject accuracy; Notebook 2's summary shows the modest but real lift LOSO cross-validation provides across all nine subjects with the same hand-engineered features; and Notebook 3's summary shows EEGNet's zero-shot LOSO accuracy sitting consistently above both the hybrid-model mean and the 25% chance line, even under a constrained training budget.
+Across the three experiments, the overall trend is clear:
 
-**Why 47.6% matters more than the raw number suggests.** It's nearly double the 25% chance level, achieved with EEGNet trained on only ~14% of its recommended epoch budget on CPU-only hardware — and it still has to absorb two subjects (S02, S05) that are intrinsically hard to decode under *every* pipeline tested in this project. Given that a fully-trained EEGNet (300 epochs, ideally GPU-accelerated) was estimated to need 7+ hours versus the roughly 1 hour actually available, this fine-tuned result should be read as a conservative floor on the architecture's real potential on this dataset, not its ceiling — and it already outperforms both hand-engineered baselines.
+**single-subject training generalizes poorly → LOSO improves cross-subject performance → EEGNet provides the strongest zero-shot result.**
+
+The fine-tuned EEGNet reaches **47.6% mean accuracy**, compared with the **25% chance level** for four-class classification. This improvement is encouraging, but the result should be interpreted alongside the constrained training budget and the substantial variability between subjects.
 
 ### The Domain-Shift Problem, Visualized
 
 <p align="center">
   <img src="figures/pairwise_transfer_heatmap.png" width="620" alt="Pairwise cross-subject transfer accuracy heatmap"><br>
-  <sub><b>Pairwise Transfer Heatmap (CSP + Logistic Regression).</b> The bright diagonal — where a model is trained and tested on the <i>same</i> subject — reaches as high as 0.83 (S03) and 0.80 (S08), for a mean of 65.6%. The moment that same model is tested on a <i>different</i> subject, the near-uniform dark off-diagonal shows accuracy collapsing to essentially chance (mean 25.4%) almost everywhere on the grid — a few pairs, like training on S07 and testing on S02 (0.13), even fall <i>below</i> chance. Notice also that S05's own diagonal value (0.46) is the lowest of any subject, an early warning sign of the difficulty this subject causes throughout the rest of the project.</sub>
+  <sub><b>Pairwise Transfer Heatmap (CSP + Logistic Regression).</b> Same-subject performance reaches as high as 0.83 (S03) and 0.80 (S08), with a mean of 65.6%. Cross-subject accuracy drops to a mean of 25.4%, illustrating the severity of the domain shift. S05 also has the lowest within-subject accuracy (0.46), indicating that it is a particularly difficult subject.</sub>
 </p>
 
 <br>
 
 <p align="center">
   <img src="figures/csp_topomaps.png" width="750" alt="CSP spatial pattern topographies per WPD sub-band"><br>
-  <sub><b>CSP Spatial Patterns per WPD Sub-band (Subject 1).</b> Each row is one WPD frequency sub-band and each column is one of the top-4 CSP spatial components. Rather than converging on clean, symmetric dipoles centered over C3/C4 as textbook sensorimotor ERD would predict, several components drift off-target — e.g. the sharp, focal left-frontal hotspot in component 2 of the 7.8–15.6 Hz band, or the strong posterior activation dominating component 2 of the 15.6–23.4 Hz band. This is a useful diagnostic: on a single subject's limited data, CSP doesn't always isolate "pure" motor-cortex signal, and part of what the downstream MLP learns is spatial variance from non-motor sources — one contributing factor behind Notebook 1's poor cross-subject generalization.</sub>
+  <sub><b>CSP Spatial Patterns per WPD Sub-band (Subject 1).</b> Several CSP components do not show clean sensorimotor patterns centered around C3/C4. Instead, some capture frontal or posterior activity, suggesting that the learned spatial filters may contain non-motor variance — one possible contributor to the poor cross-subject generalization observed in Notebook 1.</sub>
 </p>
 
 ### 🔊 A Note on Noisy Subjects
 
-Not all subjects are equally decodable, and this pattern is **consistent across every pipeline tested** — strong evidence that the difficulty is intrinsic to those subjects' recordings rather than an artifact of any one modelling approach:
+Subject difficulty is broadly consistent across the different pipelines:
 
-- **Subject 2 (S02)** hovers at or near chance level in every experiment — **24.7%** under LOSO hybrid, **29.9%** under zero-shot EEGNet — suggesting a persistently weak or noisy motor-imagery signature.
-- **Subject 5 (S05)** is similarly difficult (**28.5%** hybrid LOSO, **25.7%** EEGNet) and is the *only* subject that showed **zero improvement** from subject-specific fine-tuning, implying very little class-discriminative signal is present in that subject's data under either approach.
-- By contrast, **Subject 1** and **Subject 8** are consistently the easiest to generalize to across all three notebooks (up to **66.0%** accuracy for EEGNet on S01).
+* **S02** remains close to chance (**24.7%** hybrid LOSO, **29.9%** zero-shot EEGNet).
+* **S05** is similarly difficult (**28.5%** hybrid LOSO, **25.7%** EEGNet) and shows no improvement from subject-specific fine-tuning.
+* **S01** and **S08** are consistently among the easier subjects to generalize to, with EEGNet reaching **66.0%** on S01.
+
+These patterns suggest that subject-level signal quality and variability play an important role in cross-subject decoding performance.
 
 ---
 
 ## 🔗 References
 
-- Ang, K. K., Chin, Z. Y., Zhang, H., & Guan, C. (2008). *Filter Bank Common Spatial Pattern (FBCSP) in Brain-Computer Interface.* IEEE IJCNN.
-- Brunner, C. et al. (2008). *BCI Competition 2008 – Graz Data Set A.*
-- Ramoser, H., Müller-Gerking, J., & Pfurtscheller, G. (2000). *Optimal spatial filtering of single trial EEG during imagined hand movement.* IEEE Trans. Rehabilitation Engineering.
-- Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon, S. M., Hung, C. P., & Lance, B. J. (2018). *EEGNet: a compact convolutional neural network for EEG-based brain-computer interfaces.* Journal of Neural Engineering, 15(5), 056013. — [Architecture reference (braindecode)](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)
-- He, H., & Wu, D. (2020). *Transfer learning for brain-computer interfaces: A Euclidean space data alignment approach.* IEEE Trans. Biomedical Engineering, 67(2), 399–410.
-- Gramfort, A. et al. (2013). *MEG and EEG data analysis with MNE-Python.* Frontiers in Neuroscience, 7, 267.
+* Ang, K. K., Chin, Z. Y., Zhang, H., & Guan, C. (2008). *Filter Bank Common Spatial Pattern (FBCSP) in Brain-Computer Interface.* IEEE IJCNN.
+* Brunner, C. et al. (2008). *BCI Competition 2008 – Graz Data Set A.*
+* Ramoser, H., Müller-Gerking, J., & Pfurtscheller, G. (2000). *Optimal spatial filtering of single trial EEG during imagined hand movement.* IEEE Trans. Rehabilitation Engineering.
+* Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon, S. M., Hung, C. P., & Lance, B. J. (2018). *EEGNet: a compact convolutional neural network for EEG-based brain-computer interfaces.* Journal of Neural Engineering, 15(5), 056013. — [Architecture reference](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)
+* He, H., & Wu, D. (2020). *Transfer learning for brain-computer interfaces: A Euclidean space data alignment approach.* IEEE Trans. Biomedical Engineering, 67(2), 399–410.
+* Gramfort, A. et al. (2013). *MEG and EEG data analysis with MNE-Python.* Frontiers in Neuroscience, 7, 267.
 
-> 📄 For the complete derivations, per-fold tables, and full discussion behind every number in this README: **[Read the full project report →](doc/Report.pdf)**
+> 📄 For the complete derivations, per-fold tables, and full discussion behind every result in this README: **[Read the full project report →](doc/Report.pdf)**
