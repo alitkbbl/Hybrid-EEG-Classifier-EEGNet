@@ -120,9 +120,10 @@ The final stage replaces the hand-engineered feature pipeline with **[EEGNet](ht
 EEGNet learns temporal and spatial filters directly from the EEG signal rather than relying on explicitly engineered WPD and CSP features.
 
 * **Best zero-shot cross-subject performance:** **43.9% ± 14.0%** mean LOSO accuracy, with Cohen's **κ = 0.252**.
-* 🎯 **Subject-specific fine-tuning:** using 50% of the target subject's trials for 10 epochs increases mean accuracy to **47.6%**.
+* **Subject-specific fine-tuning:** using 50% of the target subject's trials for 10 epochs increases mean accuracy to **47.6%**.
 
-> ⚠️ **Hardware Constraint:** Training was performed on a CPU-only setup, so EEGNet was limited to **40 epochs** rather than the **300+ epochs** used as the recommended training budget. The model was therefore likely under-trained, and the reported result should be interpreted in that context.
+⚠️ **Methodological Note (Hardware & Data Constraints):** 
+Due to hardware limitations, the EEGNet model in this project was restricted to only $40$ training epochs, preventing full convergence. Furthermore, training deep neural networks on a small cohort of $9$ subjects is insufficient for learning robust domain-invariant features. Therefore, the comparison between the fully-optimized classic ML pipeline and the under-trained EEGNet should be viewed as a **Proof of Concept (PoC) for domain shift challenges**, rather than a definitive conclusion on architectural superiority.
 
 ---
 
