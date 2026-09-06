@@ -1,4 +1,4 @@
-# Hybrid EEG Motor Imagery Classifier: WPD + CSP + MLP vs. EEGNet
+# EEG Motor Imagery Classifier: WPD + CSP + MLP vs. EEGNet
 
 [![Motor Imagery](https://img.shields.io/badge/Motor%20Imagery-EEG%20BCI-6A1B9A)](#)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](#)
