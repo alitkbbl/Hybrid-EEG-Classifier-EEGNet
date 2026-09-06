@@ -18,8 +18,11 @@
 \usepackage{enumitem}
 \usepackage{fancyhdr}
 \usepackage{setspace}
-\usepackage[colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black,
-urlcolor=blue!50!black, linktoc=all]{hyperref}
+\usepackage[colorlinks=true,
+linkcolor=blue!45!black,
+citecolor=blue!45!black,
+urlcolor=blue!45!black,
+linktoc=all]{hyperref}
 
 % ============================================================
 %  GENERAL SETTINGS
@@ -31,7 +34,7 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small EEG Motor Imagery Classification -- Project Report}
+\fancyhead[L]{\small Cross-Subject Generalization in EEG Motor Imagery}
 \fancyhead[R]{\small \thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -42,22 +45,32 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 %  TITLE PAGE
 % ============================================================
 \title{
-	\vspace{-1.5cm}
-	{\large BCI Competition IV-2a: A Comparative Study}\\[0.4cm]
-	\rule{\linewidth}{0.5pt}\\[0.3cm]
-	{\Huge \bfseries Cross-Subject Generalization in EEG-Based \\[0.2cm] Motor Imagery Classification}\\[0.3cm]
-	\rule{\linewidth}{0.5pt}\\[0.4cm]
-	{\large Subject-Dependent Baselines, Leave-One-Subject-Out Cross-Validation, \\
-		and Deep Learning (EEGNet) Approaches}
+	\vspace{-2.2cm}
+	{\large\scshape Technical Project Report}\\[0.45cm]
+	\rule{\linewidth}{0.6pt}\\[0.3cm]
+{\Huge \bfseries Cross-Subject Generalization in EEG-Based \\[0.2cm] Motor Imagery Classification}\\[0.3cm]
+	\rule{\linewidth}{0.6pt}\\[0.45cm]
+	{\large
+		A Comparative Study of Subject-Dependent Learning,\\
+		Leave-One-Subject-Out Cross-Validation, and EEGNet
+	}\\[0.55cm]
+	{\normalsize
+		BCI Competition IV-2a
+	}
 }
 
 \author{
-	Author Name \\
-	\small Department of \emph{[Your Department]}, \emph{[Your University]} \\
-	\small \texttt{[your.email@university.edu]}
+	\textbf{Ali Taghizadeh}\\[0.15cm]
+	\small
+	Computer Science\\
+	\small
+	Amirkabir University of Technology\\[0.2cm]
+	\small
+	\href{https://github.com/alitkbbl/Hybrid-EEG-Classifier-EEGNet}
+	{\texttt{github.com/alitkbbl/Hybrid-EEG-Classifier-EEGNet}}
 }
 
-\date{\today}
+\date{September 2026}
 
 % ============================================================
 %  DOCUMENT
@@ -67,123 +80,165 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\maketitle
 	\thispagestyle{empty}
 	
+	\vspace{-0.2cm}
+	
 	\begin{abstract}
 		\noindent
-		Brain--Computer Interfaces (BCIs) based on motor imagery (MI) electroencephalography (EEG) promise
-		non-invasive control pathways for assistive and rehabilitation technology, but their real-world
-		deployment is hindered by pronounced inter-subject variability in EEG signal statistics. This report
-		presents a comparative experimental study of three modelling strategies applied to the nine-subject
-		BCI Competition IV-2a motor-imagery dataset (left hand, right hand, feet, tongue). First, a hybrid
-		feature-engineering pipeline combining Wavelet Packet Decomposition (WPD), Filter-Bank Common Spatial
-		Patterns (CSP), and a Multi-Layer Perceptron (MLP) classifier is trained exclusively on a single
-		subject and evaluated on the remaining eight, revealing a severe cross-subject generalization gap
-		(in-sample accuracy $0.759$ vs.\ mean unseen-subject accuracy $0.317 \pm 0.074$, chance $=0.250$).
-		Second, the same hybrid pipeline is re-evaluated under a Leave-One-Subject-Out (LOSO) cross-validation
-		protocol across all nine subjects, incorporating Euclidean-Alignment covariance whitening, which
-		raises the mean cross-subject accuracy modestly to $0.401 \pm 0.125$. Third, EEGNet, a compact
-		convolutional neural network purpose-built for EEG decoding, is trained end-to-end under the same
-		LOSO protocol; despite a heavily constrained training budget (42 epochs instead of a recommended
-		$\sim$300, due to CPU-only compute where even the reduced run required over an hour, versus an
-		estimated 7+ hours for the full schedule), EEGNet achieves the best cross-subject performance of the
-		three approaches, with mean LOSO accuracy $0.439 \pm 0.140$ and mean Cohen's $\kappa = 0.252$, and
-		improves further to $0.476$ with a brief subject-specific fine-tuning step. These results are
-		consistent with the broader BCI literature: learned convolutional representations transfer across
-		subjects more robustly than hand-engineered spatial-spectral features, and even a small amount of
-		subject-specific calibration meaningfully narrows the domain-shift gap. We discuss the sources of
-		inter-subject variability observed in the data (via a pairwise transfer-accuracy analysis showing
-		within-subject accuracy of $0.656$ against a near-chance cross-subject accuracy of $0.254$), the
-		implications of the computational constraints on the reported EEGNet results, and directions for
-		future work including longer training schedules, transfer learning, and Riemannian-geometry-based
-		alignment methods.
+		Brain--Computer Interfaces (BCIs) based on motor imagery (MI) EEG provide a non-invasive
+		way of translating brain activity into control commands. A major challenge, however, is that
+		the statistical structure of EEG signals can vary substantially across individuals, making
+		models trained on one subject difficult to transfer to another without calibration.
+		
+		This report investigates this cross-subject generalization problem using the nine-subject
+		BCI Competition IV-2a dataset, which contains four motor-imagery classes: left hand, right
+		hand, feet, and tongue. Three modelling approaches are evaluated. First, a hybrid
+		feature-engineering pipeline based on Wavelet Packet Decomposition (WPD), Filter-Bank Common
+		Spatial Patterns (CSP), and a Multi-Layer Perceptron (MLP) is trained on a single subject and
+		then transferred directly to the remaining subjects. This experiment exposes a substantial
+		generalization gap, with an accuracy of $0.759$ on the held-out trials of the training subject
+		compared with $0.317 \pm 0.074$ on the eight unseen subjects.
+		
+		Second, the same hybrid modelling approach is evaluated using Leave-One-Subject-Out (LOSO)
+		cross-validation across all nine subjects, with Euclidean Alignment included to reduce
+		subject-specific differences in covariance structure. This raises the mean cross-subject
+		accuracy to $0.401 \pm 0.125$. Third, EEGNet, a compact convolutional neural network designed
+		for EEG decoding, is trained end-to-end under the same LOSO protocol. Despite a restricted
+		training budget imposed by CPU-only computation, EEGNet achieves the highest zero-shot
+		cross-subject accuracy of the three approaches, reaching $0.439 \pm 0.140$ with a mean
+		Cohen's $\kappa$ of $0.252$. A brief subject-specific fine-tuning stage further increases
+		the mean accuracy to $0.476$.
+		
+		The experiments also include a pairwise transfer analysis to quantify the domain shift more
+		directly. Mean within-subject accuracy is $0.656$, whereas direct cross-subject transfer
+		achieves only $0.254$, close to the four-class chance level of $0.25$. Taken together, the
+		results show that cross-subject transfer remains a central challenge for MI-EEG classification.
+		They also suggest that learning from multiple subjects and using end-to-end representations
+		can improve zero-calibration performance, while a small amount of subject-specific calibration
+		can provide a further improvement.
 	\end{abstract}
 	
-	\vspace{0.5cm}
-	\noindent\textbf{Keywords:} EEG, Brain--Computer Interface, Motor Imagery, Common Spatial Patterns,
-	Wavelet Packet Decomposition, EEGNet, Leave-One-Subject-Out, Cross-Subject Generalization, Transfer Learning.
+	\vspace{0.45cm}
+	
+	\noindent
+	\textbf{Keywords:}
+	EEG; Brain--Computer Interface; Motor Imagery;
+	Cross-Subject Generalization; Common Spatial Patterns;
+	Wavelet Packet Decomposition; EEGNet;
+	Leave-One-Subject-Out; Transfer Learning.
 	
 	\newpage
 	\tableofcontents
 	\newpage
-	
+
 	% ============================================================
 	\section{Introduction}
 	% ============================================================
 	
 	\subsection{Motivation}
-	Brain--Computer Interfaces (BCIs) translate neural activity into control commands, offering a
-	communication and control channel that bypasses the peripheral nervous system entirely. Among the
-	non-invasive modalities, electroencephalography (EEG) is the most widely adopted due to its low cost,
-	portability, and high temporal resolution. Motor imagery (MI) -- the mental rehearsal of a movement
-	without its physical execution -- is one of the most extensively studied EEG paradigms because it
-	modulates sensorimotor rhythms (mu, 8--13\,Hz, and beta, 13--30\,Hz) in a spatially and temporally
-	predictable way through event-related desynchronization/synchronization (ERD/ERS)
-	\cite{pfurtscheller1999}. Reliable decoding of MI-EEG has direct applications in assistive
-	technology for paralysis, stroke rehabilitation, and hands-free device control.
+	
+	Brain--Computer Interfaces (BCIs) aim to translate neural activity into control commands,
+	providing a direct communication pathway between the brain and external devices without
+	relying on the peripheral nervous system. Among non-invasive recording techniques,
+	electroencephalography (EEG) is one of the most widely used because it is relatively
+	inexpensive, portable, and provides high temporal resolution. Motor imagery (MI), which
+	refers to mentally rehearsing a movement without actually performing it, is one of the most
+	studied EEG paradigms. Imagined movements can alter sensorimotor rhythms, particularly the
+	mu (8--13\,Hz) and beta (13--30\,Hz) bands, through event-related desynchronization and
+	synchronization (ERD/ERS) \cite{pfurtscheller1999}. Reliable decoding of these patterns
+	has potential applications in assistive technologies for people with paralysis, stroke
+	rehabilitation, and hands-free device control.
 	
 	\subsection{Challenges in EEG-Based Motor Imagery Classification}
-	Despite decades of research, MI-EEG classification remains a challenging pattern-recognition problem
-	for several interacting reasons:
+	
+	Despite extensive research, accurately classifying motor-imagery EEG remains difficult.
+	Several factors contribute to this challenge:
+	
 	\begin{itemize}[leftmargin=1.2cm]
-		\item \textbf{Low signal-to-noise ratio.} Cortical signals of interest are heavily attenuated and
-		smeared by the skull and scalp, and are easily contaminated by ocular, muscular, and cardiac
-		artifacts.
-		\item \textbf{Non-stationarity.} EEG statistics drift within a single recording session due to
-		fatigue, attention, and electrode impedance changes.
-		\item \textbf{High dimensionality, limited data.} A typical trial contains dozens of channels
-		sampled at hundreds of Hz, yet experimental protocols can only collect a few hundred labelled
-		trials per subject, creating an unfavourable dimensionality-to-sample-size ratio.
-		\item \textbf{Inter-subject variability.} Perhaps the most practically limiting factor: cortical
-		folding, skull thickness, electrode placement, and individual differences in motor-imagery
-		strategy all cause the discriminative spatial-spectral signature of the same mental task to
-		differ substantially from one person to another.
+		\item \textbf{Low signal-to-noise ratio.} The neural activity of interest is strongly
+		attenuated as it passes through the brain, skull, and scalp, and EEG recordings are
+		easily affected by ocular, muscular, and cardiac artifacts.
+		
+		\item \textbf{Non-stationarity.} EEG characteristics can change even within the same
+		recording session. Factors such as fatigue, attention, and changes in electrode impedance
+		can all affect the recorded signal.
+		
+		\item \textbf{High dimensionality with limited data.} A single trial may contain dozens
+		of channels sampled at hundreds of Hz, while only a few hundred labelled trials are
+		typically available for each subject. This creates a difficult balance between the
+		number of features and the amount of training data.
+		
+		\item \textbf{Inter-subject variability.} Perhaps the most important challenge for
+		practical BCI systems is that EEG patterns differ considerably across individuals.
+		Differences in cortical anatomy, skull properties, electrode placement, and even the
+		way a person performs motor imagery can change the spatial and spectral characteristics
+		of the recorded signal.
 	\end{itemize}
 	
 	\subsection{The Inter-Subject Variability Problem}
-	The last point above is the central theme of this report. A classifier that is calibrated
-	(trained) on one individual's EEG typically encodes spatial filters and decision boundaries that are
-	highly specific to that individual's anatomy and cognitive strategy. When such a classifier is
-	applied to a new, unseen subject without any re-calibration -- a scenario often called
-	\emph{zero-calibration} or \emph{subject-independent} decoding -- performance frequently collapses
-	towards chance level. This is a major obstacle to the practical deployment of "plug-and-play" BCIs,
-	since lengthy subject-specific calibration sessions are burdensome, especially for clinical
-	populations. Understanding \emph{how large} this generalization gap is, \emph{why} it occurs, and
-	\emph{which methods mitigate it}, is the driving question of this project.
+	
+	The last challenge is the main focus of this report. A classifier trained on one person's
+	EEG learns spatial patterns and decision boundaries that are often closely tied to that
+	individual's anatomy and cognitive strategy. When the same classifier is applied to a new
+	subject without any additional calibration, a setting often referred to as
+	\emph{zero-calibration} or \emph{subject-independent} decoding, performance can drop
+	substantially toward chance level.
+	
+	This is a major obstacle for the development of practical ``plug-and-play'' BCIs.
+	Although subject-specific calibration can improve performance, it also adds extra time and
+	effort for the user, which can be particularly inconvenient in clinical applications.
+	For this reason, an important question is not only whether a model can classify motor
+	imagery accurately for a given subject, but also how well it can transfer to people it has
+	never seen before. This report therefore focuses on three related questions: how large the
+	cross-subject generalization gap is, what factors contribute to it, and which modelling
+	strategies can reduce it.
 	
 	\subsection{Objectives and Contributions}
-	This report documents and compares three experiments, implemented as three self-contained Jupyter
-	notebooks, all evaluated on the same nine-subject dataset:
-	\begin{enumerate}[leftmargin=1.2cm]
-		\item \textbf{Experiment 1 -- Subject-Dependent Baseline.} A hybrid WPD + Filter-Bank-CSP +
-		MLP pipeline is trained and validated exclusively on Subject~1, then tested \emph{as-is} (no
-		refitting) on Subjects~1--9, to directly quantify the naive cross-subject generalization gap.
-		\item \textbf{Experiment 2 -- LOSO with the Baseline Algorithm.} The same family of hand-engineered
-		features and MLP classifier is re-evaluated with a proper Leave-One-Subject-Out cross-validation
-		protocol across all nine subjects, additionally incorporating Euclidean Alignment as a
-		cross-subject signal-normalization step.
-		\item \textbf{Experiment 3 -- Deep Learning via EEGNet with LOSO.} EEGNet
-		\cite{lawhern2018eegnet}, a compact end-to-end convolutional architecture designed specifically
-		for EEG decoding, replaces the hand-engineered feature pipeline and is evaluated under the
-		identical LOSO protocol, subject to an explicit computational budget constraint.
-	\end{enumerate}
-	The report quantifies and compares the three approaches, analyses the sources of the observed
-	domain shift, and discusses the trade-offs introduced by the computational constraints under which
-	Experiment 3 was run.
 	
+	This report presents three experiments, implemented as separate Jupyter notebooks and
+	evaluated on the same nine-subject dataset:
+	
+	\begin{enumerate}[leftmargin=1.2cm]
+		\item \textbf{Experiment 1 -- Subject-Dependent Baseline.}
+		A hybrid WPD + Filter-Bank-CSP + MLP pipeline is trained and validated exclusively on
+		Subject~1. The trained model is then applied directly to Subjects~1--9 without any
+		refitting. This experiment provides a simple baseline for measuring how much performance
+		is lost when a model is transferred from one subject to others.
+		
+		\item \textbf{Experiment 2 -- LOSO with the Baseline Algorithm.}
+		The same hand-engineered feature pipeline and MLP classifier are evaluated using a proper
+		Leave-One-Subject-Out cross-validation protocol across all nine subjects. Euclidean
+		Alignment is also introduced as a signal-normalization step to reduce differences
+		between subjects.
+		
+		\item \textbf{Experiment 3 -- Deep Learning via EEGNet with LOSO.}
+		EEGNet \cite{lawhern2018eegnet}, a compact convolutional neural network designed
+		specifically for EEG decoding, is used in place of the hand-engineered feature pipeline.
+		The model is evaluated using the same LOSO protocol, while also taking into account the
+		computational limitations of the available hardware.
+	\end{enumerate}
+	
+	The report compares the performance of these three approaches, investigates the extent of
+	the observed domain shift between subjects, and discusses how the computational constraints
+	affected the EEGNet experiment. The results are then used to identify practical directions
+	for improving cross-subject MI-EEG classification in future work.
 	\subsection{Report Structure}
-	Section~\ref{sec:dataset} describes the dataset. Section~\ref{sec:methodology} details the
-	preprocessing, feature-extraction, and modelling methodology shared and distinct across the three
-	experiments. Section~\ref{sec:setup} describes the experimental setup and the computational
-	constraints encountered, particularly for EEGNet. Section~\ref{sec:results} reports and compares
-	results across all three experiments. Section~\ref{sec:discussion} discusses the findings, and
-	Section~\ref{sec:future} outlines future work before Section~\ref{sec:conclusion} concludes.
+	
+	The remainder of the report is organized as follows. Section~\ref{sec:dataset} introduces the
+	dataset used throughout the experiments. Section~\ref{sec:methodology} describes the preprocessing,
+	feature-extraction, and modelling steps, highlighting both the components shared by the three
+	experiments and the parts that differ between them. Section~\ref{sec:setup} presents the experimental
+	setup and discusses the computational constraints, particularly those affecting EEGNet. The results
+	of all three experiments are presented and compared in Section~\ref{sec:results}. Section~\ref{sec:discussion}
+	then discusses the main findings and their implications, followed by future directions in
+	Section~\ref{sec:future}. Finally, Section~\ref{sec:conclusion} summarizes the main conclusions of the study.
 	
 	% ============================================================
 	\section{Dataset Description}
 	\label{sec:dataset}
 	% ============================================================
 	
-	All three experiments use the \textbf{BCI Competition IV Dataset 2a} \cite{brunner2008bci}, a
-	well-established public benchmark for motor-imagery decoding.
+	All three experiments are based on the \textbf{BCI Competition IV Dataset 2a} \cite{brunner2008bci},
+	a widely used public benchmark for motor-imagery EEG classification.
 	
 	\begin{table}[H]
 		\centering
@@ -206,9 +261,10 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 		\end{tabular}
 	\end{table}
 	
-	Each of the nine subjects contributes an identical, perfectly class-balanced set of 288 trials,
-	which removes class-imbalance as a confounding factor and allows the reported accuracies to be
-	compared directly against the $0.25$ chance level for four balanced classes.
+	Each of the nine subjects contributes the same set of 288 trials, with 72 trials for each of the
+	four classes. This class balance removes class imbalance as a potential source of bias and makes
+	the results directly comparable with the $0.25$ chance level expected for four equally represented
+	classes.
 	
 	% ============================================================
 	\section{Methodology}
@@ -218,36 +274,59 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\subsection{Preprocessing Pipeline}
 	\label{sec:preproc}
 	
-	Two distinct preprocessing pipelines are used across the three notebooks: a heavier
-	neurophysiologically-motivated pipeline shared by Experiments~1 and~2, and a leaner pipeline used for
-	EEGNet in Experiment~3 (deep networks are generally more tolerant of raw, less hand-curated inputs).
+	The three experiments use two main preprocessing pipelines. Experiments~1 and~2 rely on a more
+	extensive, neurophysiologically motivated preprocessing pipeline, while Experiment~3 uses a simpler
+	pipeline before passing the data to EEGNet. This difference reflects the fact that the hybrid approach
+	depends heavily on carefully prepared inputs, whereas EEGNet is designed to learn useful
+	representations directly from the EEG signal.
 	
 	\subsubsection{Hybrid Pipeline Preprocessing (Experiments 1 \& 2)}
-	Implemented with MNE-Python \cite{gramfort2013mne}, the pipeline proceeds as follows:
+	
+	The preprocessing pipeline for the hybrid approach is implemented using MNE-Python
+	\cite{gramfort2013mne} and consists of the following steps:
+	
 	\begin{enumerate}[leftmargin=1.2cm]
-		\item \textbf{Channel setup.} Raw GDF channel labels are renamed to standard 10--20 nomenclature
-		(e.g.\ \texttt{EEG-C3} $\rightarrow$ \texttt{C3}); the three EOG channels are explicitly typed as
-		\texttt{eog}; a standard 10--20 montage is attached for topographic plotting.
-		\item \textbf{Re-referencing.} An average reference is applied across all EEG channels.
-		\item \textbf{Ocular artifact removal (ICA).} Independent Component Analysis (FastICA,
-		retaining components explaining $99\%$ of variance) is fit on a temporary $1$--$40$\,Hz
-		high-pass copy of the data (standard MNE practice). Components correlated with the EOG channels
-		(threshold $=2.5$) are automatically identified and removed from the actual (non-high-passed)
-		signal. Across the nine subjects, between 1 and 3 independent components were flagged and
-		removed as ocular artifacts (Table~\ref{tab:ica-removed}).
-		\item \textbf{Band-pass filtering.} A zero-phase FIR filter (\texttt{firwin} design) isolates
-		the $8$--$30$\,Hz mu+beta sensorimotor rhythm band, in which ERD/ERS is known to be strongest.
-		\item \textbf{Epoching.} Trials are extracted from $-0.5$ to $4.0$\,s relative to cue onset,
-		with baseline correction over the pre-cue interval $[-0.5, 0]$\,s to remove DC offsets and slow
-		drifts.
-		\item \textbf{Cropping to steady-state imagery.} Epochs are subsequently cropped to
-		$[0.5, 3.5]$\,s -- a clean $3$-second steady-state motor-imagery window -- discarding the initial
-		visually-evoked / reaction-time period and the final fatigue/movement-termination period, following
-		standard practice in the FBCSP literature \cite{ang2008fbcsp}.
+		\item \textbf{Channel setup.}
+		Raw GDF channel names are converted to standard 10--20 labels (for example,
+		\texttt{EEG-C3} becomes \texttt{C3}). The three EOG channels are explicitly marked as
+		\texttt{eog}, and a standard 10--20 montage is attached for visualization and topographic
+		analysis.
+		
+		\item \textbf{Re-referencing.}
+		An average reference is applied across the EEG channels.
+		
+		\item \textbf{Ocular artifact removal (ICA).}
+		Independent Component Analysis (FastICA) is used to identify and remove components associated
+		with eye movements. ICA is fitted on a temporary $1$--$40$\,Hz high-pass filtered copy of
+		the data, retaining enough components to explain $99\%$ of the variance, following the standard
+		MNE workflow. Components showing a correlation with the EOG channels above the threshold of
+		$2.5$ are automatically marked for removal. The identified components are then removed from the
+		original, non-high-passed signal. Across the nine subjects, between 1 and 3 components were
+		removed per subject as ocular artifacts (Table~\ref{tab:ica-removed}).
+		
+		\item \textbf{Band-pass filtering.}
+		A zero-phase FIR filter with a \texttt{firwin} design is used to retain the
+		$8$--$30$\,Hz mu+beta sensorimotor rhythm range, where motor-imagery-related ERD/ERS effects
+		are expected to be most prominent.
+		
+		\item \textbf{Epoching.}
+		Each trial is extracted from $-0.5$ to $4.0$\,s relative to cue onset. Baseline correction
+		is then applied using the pre-cue interval $[-0.5, 0]$\,s to reduce DC offsets and slow
+		drifts in the signal.
+		
+		\item \textbf{Cropping to the imagery period.}
+		The resulting epochs are further cropped to $[0.5, 3.5]$\,s, giving a $3$-second window
+		that focuses on the main motor-imagery period. This removes much of the initial
+		visually evoked and reaction-time activity as well as the final part of the trial, where
+		fatigue or movement termination may have a stronger influence. This choice follows common
+		practice in FBCSP-based MI-EEG analysis \cite{ang2008fbcsp}.
 	\end{enumerate}
-	An ERD/ERS sanity check (mean PSD at C3/C4 for left- vs.\ right-hand trials, Subject A01T) confirms
-	the expected contralateral desynchronization pattern in the mu+beta band before proceeding to feature
-	extraction (Figure~\ref{fig:erd-sanity}, Appendix~\ref{app:extra-figs}).
+	
+	Before feature extraction, an ERD/ERS sanity check is performed using the mean PSD at C3 and C4
+	for left- and right-hand trials from Subject A01T. The resulting patterns show the expected
+	contralateral desynchronization in the mu+beta range, providing a basic check that the preprocessing
+	pipeline is preserving the relevant sensorimotor activity. The result is shown in
+	Figure~\ref{fig:erd-sanity} (Appendix~\ref{app:extra-figs}).
 	
 	\begin{table}[H]
 		\centering
@@ -264,92 +343,134 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\end{table}
 	
 	\subsubsection{Cross-Subject Signal Alignment (Experiment 2 only)}
-	In the LOSO experiment, an additional \textbf{Euclidean Alignment} (EA) step \cite{he2020ea} is applied
-	independently to each subject's trials \emph{before} the LOSO split: each subject's trial-covariance
-	matrices are averaged, and every trial is whitened by the inverse square root of that subject-specific
-	mean covariance. Because the whitening matrix is computed from each subject's own trials only (no
-	labels, no cross-subject information), this step is safe to apply prior to splitting the data and does
-	not introduce any leakage across the LOSO folds. Its purpose is to equalize second-order (covariance)
-	statistics across subjects, which is a dominant and well-documented source of inter-subject variability
-	in motor-imagery EEG prior to spatial filtering.
 	
+	Experiment~2 includes an additional \textbf{Euclidean Alignment} (EA) step
+	\cite{he2020ea} to reduce differences in the signal statistics across subjects. The alignment
+	is performed independently for each subject before the LOSO split. First, the covariance matrix
+	of each trial is computed and the mean covariance is obtained for that subject. Each trial is then
+	whitened using the inverse square root of this subject-specific mean covariance.
+	
+	Importantly, the alignment matrix is estimated using only the EEG trials of the corresponding
+	subject. It does not use class labels or information from any other subject. As a result, applying
+	EA before the LOSO split does not introduce cross-subject information leakage. The main purpose of
+	this step is to make the second-order covariance structure of the recordings more comparable across
+	subjects, since differences in covariance statistics are an important source of subject-to-subject
+	variation in motor-imagery EEG.
 	\subsubsection{EEGNet Pipeline Preprocessing (Experiment 3)}
-	The EEGNet pipeline intentionally uses a lighter-touch preprocessing chain, consistent with the
-	design philosophy of end-to-end deep networks that learn their own spatial/spectral filters:
+	
+	The EEGNet pipeline uses a simpler preprocessing scheme than the hybrid approach. This is consistent
+	with the idea behind end-to-end deep learning models: rather than relying heavily on manually designed
+	spatial and spectral features, the network is given a relatively broad representation of the signal
+	and learns useful filters directly from the data.
+	
 	\begin{enumerate}[leftmargin=1.2cm]
-		\item \textbf{Re-referencing.} Common Average Reference (CAR).
-		\item \textbf{Band-pass filtering.} A wider $4$--$38$\,Hz FIR filter is used (versus the
-		$8$--$30$\,Hz mu+beta band used for the hybrid pipeline), retaining lower-frequency and
-		higher-frequency information that a learned convolutional filter bank may exploit.
-		\item \textbf{Epoching.} A $0$--$4.0$\,s cue-onset window is extracted with no explicit
-		baseline correction.
-		\item \textbf{Resampling.} Epochs are downsampled from $250$\,Hz to $128$\,Hz (yielding
-		$513$ samples/trial), substantially reducing the temporal dimensionality and, consequently, the
-		computational cost of the convolutional network.
-		\item \textbf{Per-trial normalization.} Each trial is independently z-scored per channel using
-		that trial's own mean and standard deviation, then clipped to $\pm 6$ standard deviations. This
-		directly targets amplitude/scale differences between subjects -- a major source of cross-subject
-		variance in LOSO settings -- without using any statistic computed across trials or subjects, and
-		is therefore leakage-free.
+		\item \textbf{Re-referencing.}
+		Common Average Reference (CAR) is applied to the EEG channels.
+		
+		\item \textbf{Band-pass filtering.}
+		A wider $4$--$38$\,Hz FIR filter is used instead of the $8$--$30$\,Hz mu+beta band used
+		in the hybrid pipeline. The broader range preserves both lower- and higher-frequency
+		information that the learned convolutional filters may be able to use.
+		
+		\item \textbf{Epoching.}
+		A $0$--$4.0$\,s window relative to cue onset is extracted for each trial, without applying
+		explicit baseline correction.
+		
+		\item \textbf{Resampling.}
+		The epochs are downsampled from $250$\,Hz to $128$\,Hz, resulting in $513$ samples per trial.
+		This reduces the temporal size of the input and, in turn, lowers the computational cost of
+		training the convolutional network.
+		
+		\item \textbf{Per-trial normalization.}
+		Each trial is independently z-scored on a channel-by-channel basis using the mean and standard
+		deviation calculated from that trial. The resulting values are then clipped to $\pm 6$
+		standard deviations. This step helps reduce differences in signal amplitude and scale between
+		subjects, which can be particularly important in a LOSO setting. Since the normalization uses
+		only statistics from the individual trial and does not rely on information from other trials
+		or subjects, it does not introduce data leakage.
 	\end{enumerate}
-	Note that, of the two available session types in BCI-IV-2a (\texttt{T} = training/labelled,
-	\texttt{E} = evaluation), only the \texttt{T} sessions could be used for Experiment~3: the \texttt{E}
-	sessions' true labels are distributed as separate \texttt{.mat} files which were not available in the
-	working environment, so those sessions were automatically skipped by the loader, leaving 288 trials
-	per subject (identical to Experiments~1 and~2).
+	
+	The BCI-IV-2a dataset provides two session types: \texttt{T}, containing the labelled training
+	trials, and \texttt{E}, containing the evaluation trials. For Experiment~3, only the \texttt{T}
+	sessions could be used. The true labels for the \texttt{E} sessions are provided separately as
+	\texttt{.mat} files, which were not available in the working environment. As a result, the data
+	loader automatically skipped those sessions, leaving 288 trials per subject, the same number used
+	in Experiments~1 and~2.
 	
 	\subsection{Feature Engineering: Hybrid WPD + Filter-Bank CSP}
 	\label{sec:features}
 	
-	Experiments 1 and 2 use an identical family of hand-engineered features, combining a
-	time-frequency decomposition (WPD) with a spatial filtering technique (CSP) in a Filter-Bank CSP
-	(FBCSP)-style architecture \cite{ang2008fbcsp}.
+	Experiments~1 and~2 use the same general family of hand-engineered features. The approach combines
+	Wavelet Packet Decomposition (WPD) for time-frequency analysis with Common Spatial Patterns (CSP)
+	for spatial filtering, following the general idea of a Filter-Bank CSP (FBCSP) architecture
+	\cite{ang2008fbcsp}.
 	
 	\subsubsection{Wavelet Packet Decomposition (WPD)}
+	
 	Unlike the standard Discrete Wavelet Transform, which recursively decomposes only the low-frequency
-	branch, Wavelet Packet Decomposition recursively splits \emph{both} the low- and high-frequency
-	branches at every level, producing a full, equally-spaced filter bank. Using the Daubechies-4
-	(\texttt{db4}) wavelet -- a standard choice for EEG signals due to its balance of smoothness and
-	compact support -- the signal's Nyquist range ($0$--$125$\,Hz) is decomposed into $2^{L}$ equal
-	sub-bands at decomposition level $L$. Only the leaf nodes whose frequency range overlaps the
-	$8$--$30$\,Hz band-pass window are retained for feature extraction, so that WPD acts as a
-	data-driven, fine-grained refinement of the mu+beta band already isolated in preprocessing.
+	branch, Wavelet Packet Decomposition recursively splits both the low- and high-frequency branches
+	at each level. This produces a complete set of evenly spaced sub-bands. In this project, the
+	Daubechies-4 (\texttt{db4}) wavelet is used. It is a common choice for EEG analysis because it
+	provides a useful balance between smoothness and compact support.
+	
+	Given the signal's Nyquist range of $0$--$125$\,Hz, a decomposition at level $L$ produces
+	$2^L$ sub-bands of equal width. Only the leaf nodes whose frequency ranges overlap the
+	$8$--$30$\,Hz band-pass range are retained for feature extraction. In this way, WPD provides
+	a finer time-frequency decomposition of the sensorimotor frequencies that were already selected
+	during preprocessing.
 	
 	\begin{itemize}[leftmargin=1.2cm]
-		\item \textbf{Experiment 1} (Subject~1 only) uses $L=4$ (16 leaf nodes, $7.8125$\,Hz bandwidth
-		each), yielding \textbf{3} relevant sub-bands: \texttt{aaad} ($7.81$--$15.63$\,Hz),
-		\texttt{aadd} ($15.63$--$23.44$\,Hz), \texttt{aada} ($23.44$--$31.25$\,Hz).
-		\item \textbf{Experiment 2} (LOSO) uses a deeper decomposition, $L=5$ (32 leaf nodes,
-		$3.91$\,Hz bandwidth each), yielding \textbf{6} relevant, finer-grained sub-bands:
-		\texttt{aaadd}, \texttt{aaada}, \texttt{aadda}, \texttt{aaddd}, \texttt{aadad}, \texttt{aadaa},
-		spanning $7.81$--$31.25$\,Hz.
+		\item \textbf{Experiment 1} (Subject~1 only) uses $L=4$, producing 16 leaf nodes with a
+		bandwidth of $7.8125$\,Hz each. Three of these overlap the target frequency range:
+		\texttt{aaad} ($7.81$--$15.63$\,Hz),
+		\texttt{aadd} ($15.63$--$23.44$\,Hz), and
+		\texttt{aada} ($23.44$--$31.25$\,Hz).
+		
+		\item \textbf{Experiment 2} (LOSO) uses a deeper decomposition with $L=5$, giving 32 leaf
+		nodes with a bandwidth of $3.91$\,Hz each. Six relevant sub-bands are retained:
+		\texttt{aaadd}, \texttt{aaada}, \texttt{aadda}, \texttt{aaddd}, \texttt{aadad}, and
+		\texttt{aadaa}, covering the range from $7.81$ to $31.25$\,Hz.
 	\end{itemize}
 	
-	For each retained sub-band, two products are computed per channel and trial:
+	For each selected sub-band, two types of features are extracted for every channel and trial:
+	
 	\begin{enumerate}[leftmargin=1.2cm]
-		\item \textbf{Statistical features:} \emph{energy}, \emph{variance}, and \emph{Shannon entropy}
-		of the wavelet coefficients, computed only over a $5$-channel sensorimotor region of interest
-		(ROI): $\{$C3, C1, Cz, C2, C4$\}$.
-		\item \textbf{Sub-band reconstruction:} the coefficients of the target leaf node are inverse-transformed
-		(all other leaf nodes zeroed) to reconstruct a band-limited version of the full multi-channel
-		signal, which is then passed to CSP.
+		\item \textbf{Statistical features.}
+		Energy, variance, and Shannon entropy are calculated from the wavelet coefficients.
+		These features are extracted only from a $5$-channel sensorimotor region of interest (ROI):
+		$\{$C3, C1, Cz, C2, C4$\}$.
+		
+		\item \textbf{Sub-band reconstruction.}
+		The coefficients of the selected leaf node are inverse-transformed while all other leaf
+		nodes are set to zero. This reconstructs a band-limited version of the original
+		multi-channel signal, which is then passed to CSP.
 	\end{enumerate}
 	
 	\subsubsection{Filter-Bank Common Spatial Patterns (CSP)}
-	For each WPD sub-band, a dedicated CSP model \cite{ramoser2000csp} (Ledoit--Wolf shrinkage
-	regularization, log-variance features) is fit to find the spatial filters that maximize the variance
-	ratio between classes on that sub-band's reconstructed signal. This "CSP-per-WPD-subband" design
-	mirrors the Filter-Bank CSP approach of Ang et al.\ \cite{ang2008fbcsp}, but replaces the manually chosen
-	band-pass filter bank with a data-driven WPD filter bank.
+	
+	A separate CSP model \cite{ramoser2000csp} is fitted for each WPD sub-band. Ledoit--Wolf
+	shrinkage regularization is used during CSP fitting, and the resulting log-variance features
+	are retained. The purpose of CSP is to find spatial filters that emphasize differences in
+	signal variance between the motor-imagery classes for each sub-band.
+	
+	This ``CSP-per-WPD-subband'' setup follows the general Filter-Bank CSP idea introduced by
+	Ang et al.\ \cite{ang2008fbcsp}, but uses WPD as the filter bank instead of a set of manually
+	selected band-pass filters. This allows the frequency decomposition to be defined more finely
+	by the wavelet packet structure.
 	
 	\subsubsection{Feature Fusion and Leakage Prevention}
-	For every trial, the log-variance CSP features from all relevant sub-bands are concatenated with the
-	WPD statistical features from the sensorimotor ROI, then standardized (zero mean, unit variance).
-	Because both the CSP spatial filters and the standardization scaler are supervised or
-	distribution-dependent, they are \emph{always fit exclusively on the training partition} of the
-	relevant split (single-subject train/val/test split in Experiment~1; the pooled 8-subject training
-	fold in the LOSO scheme of Experiment~2) and only ever \emph{applied} (never refit) to
-	validation/test/held-out-subject data.
+	
+	For each trial, the log-variance features produced by CSP across all selected sub-bands are
+	concatenated with the WPD statistical features extracted from the sensorimotor ROI. The complete
+	feature vector is then standardized to zero mean and unit variance.
+	
+	Because the CSP spatial filters depend on the class labels and the standardization step depends
+	on the data distribution, both are fitted only on the training portion of each split. In
+	Experiment~1, this means the training set from the single-subject train/validation/test split.
+	In Experiment~2, they are fitted using only the pooled eight-subject training fold in each LOSO
+	iteration. Once fitted, these transformations are applied to the validation, test, or held-out
+	subject data without being refitted. This prevents information from the evaluation data from
+	leaking into the training process.
 	
 	\begin{table}[H]
 		\centering
@@ -365,613 +486,763 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 		\end{tabular}
 	\end{table}
 	
-	The larger feature vector in Experiment~2 (138 vs.\ 57 dimensions) reflects the deeper WPD
-	decomposition and larger number of CSP components per sub-band used in that notebook, and motivated
-	a correspondingly larger weight-decay coefficient for the downstream MLP (Section~\ref{sec:mlp}).
+	The final feature vector is therefore considerably larger in Experiment~2, with 138 features
+	compared with 57 in Experiment~1. This difference comes from the deeper WPD decomposition and
+	the larger number of CSP components used for each sub-band in the LOSO experiment. The increased
+	feature dimensionality also motivated the use of a larger weight-decay coefficient for the MLP
+	described in Section~\ref{sec:mlp}.
 	
-	\subsection{Classification Models}
+\subsection{Classification Models}
+
+\subsubsection{Multi-Layer Perceptron (Experiments 1 \& 2)}
+\label{sec:mlp}
+
+Both experiments based on the hybrid features use the same compact feed-forward Multi-Layer
+Perceptron (MLP):
+\begin{center}
+	\resizebox{\linewidth}{!}{$
+		\text{Input} \rightarrow \text{Linear}(\cdot, 128) \rightarrow \text{BatchNorm} \rightarrow \text{ReLU}
+		\rightarrow \text{Dropout} \rightarrow \text{Linear}(128, 64) \rightarrow \text{BatchNorm} \rightarrow
+		\text{ReLU} \rightarrow \text{Dropout} \rightarrow \text{Linear}(64, 4)
+		$}
+\end{center}
+
+The network is trained using the Adam optimizer and cross-entropy loss. Early stopping based on
+validation loss is used in Experiment~1, while Experiment~2 follows a short fixed training schedule
+with early stopping. In addition to the MLP, a simple multinomial Logistic Regression classifier
+is trained on the same hybrid features in both experiments. This provides a useful lower-complexity
+baseline and helps determine whether the additional non-linearity of the MLP provides a meaningful
+benefit.
+
+\subsubsection{EEGNet (Experiment 3)}
+\label{sec:eegnet}
+
+EEGNet \cite{lawhern2018eegnet} is a compact convolutional neural network designed specifically for
+EEG decoding. Its architecture consists of three main stages:
+
+\begin{enumerate}[leftmargin=1.2cm]
+	\item \textbf{Temporal convolution.}
+	A 2-D convolution with $F_1$ filters of length $\texttt{kernel\_length}$ is applied along
+	the time axis. These filters learn temporal patterns at different frequencies and therefore
+	serve a role similar to a learned band-pass filter bank.
 	
-	\subsubsection{Multi-Layer Perceptron (Experiments 1 \& 2)}
-	\label{sec:mlp}
-	Both hybrid-feature experiments use a compact feed-forward MLP:
-	\begin{center}
-		\resizebox{\linewidth}{!}{$
-			\text{Input} \rightarrow \text{Linear}(\cdot, 128) \rightarrow \text{BatchNorm} \rightarrow \text{ReLU}
-			\rightarrow \text{Dropout} \rightarrow \text{Linear}(128, 64) \rightarrow \text{BatchNorm} \rightarrow
-			\text{ReLU} \rightarrow \text{Dropout} \rightarrow \text{Linear}(64, 4)
-			$}
-	\end{center}
-	trained with the Adam optimizer and cross-entropy loss, with early stopping on validation loss
-	(Experiment~1) or a fixed short schedule with early stopping (Experiment~2). As a sanity-check lower
-	bound, a simple multinomial Logistic Regression classifier is also fit on the same hybrid features in
-	both experiments.
+	\item \textbf{Depthwise spatial convolution.}
+	A depthwise convolution spans all EEG channels (kernel size
+	$= n_{\text{channels}} \times 1$) with depth multiplier $D$. This layer learns spatial filters
+	that are conceptually similar to CSP filters, with each spatial filter operating on the
+	features produced by an individual temporal filter. Batch normalization, ELU activation,
+	average pooling, and dropout are then applied.
 	
-	\subsubsection{EEGNet (Experiment 3)}
-	\label{sec:eegnet}
-	EEGNet \cite{lawhern2018eegnet} is a compact convolutional architecture purpose-built for EEG
-	decoding, comprising three stages:
-	\begin{enumerate}[leftmargin=1.2cm]
-		\item \textbf{Temporal convolution:} a 2-D convolution with $F_1$ filters of length
-		$\texttt{kernel\_length}$ along the time axis, learning frequency-selective temporal filters
-		analogous to a band-pass filter bank.
-		\item \textbf{Depthwise spatial convolution:} a depthwise convolution spanning all EEG channels
-		(kernel size $= n_{\text{channels}} \times 1$, depth multiplier $D$), learning spatial filters
-		analogous to CSP, directly connected to each temporal filter -- followed by batch normalization,
-		ELU activation, average pooling, and dropout.
-		\item \textbf{Separable temporal convolution:} a depthwise-then-pointwise (separable) convolution
-		that further mixes information across the $F_1{\times}D$ feature maps into $F_2$ output feature
-		maps, followed again by batch normalization, ELU, average pooling, and dropout.
-	\end{enumerate}
-	A final fully-connected layer maps the flattened feature maps to class logits. Following the original
-	EEGNet design, max-norm weight constraints are enforced after every optimizer step on both the
-	depthwise-convolution kernel (max norm $1.0$) and the final dense layer (max norm $0.25$), acting as
-	strong implicit regularizers appropriate for the limited amount of training data per subject.
-	
-	\begin{table}[H]
-		\centering
-		\caption{EEGNet architectural hyperparameters used in Experiment 3.}
-		\label{tab:eegnet-hparams}
-		\begin{tabular}{ll}
-			\toprule
-			\textbf{Hyperparameter} & \textbf{Value} \\
-			\midrule
-			Temporal filters ($F_1$) & 8 \\
-			Depth multiplier ($D$) & 2 \\
-			Pointwise filters ($F_2$) & 16 \\
-			Temporal kernel length & 64 samples \\
-			Dropout rate & 0.5 \\
-			Depthwise max-norm & 1.0 \\
-			Dense max-norm & 0.25 \\
-			Input shape & $(1, 22, 513)$ -- (channel-dim, EEG channels, time samples) \\
-			Output classes & 4 \\
-			\bottomrule
-		\end{tabular}
-	\end{table}
-	
-	\subsection{Validation Strategies}
-	
-	\subsubsection{Subject-Dependent Single-Subject Evaluation (Experiment 1)}
-	The entire pipeline -- WPD sub-band selection, CSP filters, feature scaler, and MLP weights -- is fit
-	using \emph{only} Subject A01T's data, with a stratified $60\%/20\%/20\%$ train/validation/test split
-	($172/58/58$ trials). The fitted pipeline is then applied, without any refitting, in pure inference
-	mode to Subjects A02T--A09T (every trial from each of these subjects serves as a test trial, since
-	none of their data was ever seen during fitting), directly measuring the zero-calibration
-	cross-subject generalization gap of a naively subject-specific model.
-	
-	\subsubsection{Leave-One-Subject-Out Cross-Validation (Experiments 2 \& 3)}
-	In LOSO, the experiment is repeated nine times; on each fold, one subject is entirely held out as the
-	test set, and the pipeline (feature extractor and/or network) is fit from scratch on the pooled data
-	of the remaining eight subjects, with a small stratified slice of that pool ($15\%$) further reserved
-	for validation/early-stopping. The held-out subject is never touched during fitting. This protocol is
-	the standard way to estimate subject-independent (zero-calibration) generalization performance while
-	using all available data.
-	
-	\subsection{Evaluation Metrics}
-	All experiments report \textbf{accuracy}, \textbf{per-class precision/recall/F1}, and
-	\textbf{macro-averaged F1}, alongside \textbf{confusion matrices} (raw counts and row-normalized).
-	Experiment~3 additionally reports \textbf{Cohen's kappa} \cite{cohen1960kappa}, a chance-corrected
-	agreement statistic commonly used in the BCI literature, defined as
-	$\kappa = (p_o - p_e)/(1 - p_e)$ where $p_o$ is observed accuracy and $p_e$ is the accuracy expected
-	by chance given the class marginals. All reported chance levels assume four perfectly balanced
-	classes, i.e.\ $p_e = 0.25$.
-	
-	% ============================================================
-	\section{Experimental Setup and Computational Constraints}
-	\label{sec:setup}
-	% ============================================================
-	
-	\subsection{Software and Hardware Environment}
-	All three notebooks were implemented in Python using MNE-Python \cite{gramfort2013mne} for EEG I/O
-	and preprocessing, PyWavelets for WPD, scikit-learn for CSP/Logistic Regression/metrics, and PyTorch
-	\cite{paszke2019pytorch} for both the MLP and EEGNet models. Critically, \textbf{all three notebooks
-		report training on CPU only} (no CUDA-capable GPU was available in the working environment), which
-	directly shapes the computational-budget decisions described below, especially for EEGNet.
-	
-	\subsection{Hyperparameter Summary Across Experiments}
-	
-	\begin{table}[H]
-		\centering
-		\small
-		\caption{Consolidated hyperparameter comparison across the three experiments.}
-		\label{tab:hparam-comparison}
-		\resizebox{\linewidth}{!}{%
-			\begin{tabular}{lccc}
-				\toprule
-				\textbf{Setting} & \textbf{Exp.\ 1 (Subj.-dep.)} & \textbf{Exp.\ 2 (LOSO hybrid)} & \textbf{Exp.\ 3 (EEGNet LOSO)} \\
-				\midrule
-				Band-pass filter & 8--30\,Hz & 8--30\,Hz & 4--38\,Hz \\
-				Epoch window (post-cue) & 0.5--3.5\,s & 0.5--3.5\,s & 0--4.0\,s \\
-				Sampling rate & 250\,Hz & 250\,Hz & 128\,Hz (resampled) \\
-				Cross-subject alignment & -- & Euclidean Alignment & Per-trial z-score \\
-				WPD wavelet / level & \texttt{db4} / 4 & \texttt{db4} / 5 & -- \\
-				Relevant sub-bands & 3 & 6 & -- \\
-				CSP components / sub-band & 4 & 8 & -- \\
-				Feature vector length & 57 & 138 & (end-to-end, no hand features) \\
-				Classifier & MLP (57-128-64-4) & MLP (138-128-64-4) & EEGNet ($F_1{=}8,D{=}2,F_2{=}16$) \\
-				Optimizer & Adam & Adam & Adam \\
-				Learning rate & $10^{-3}$ & $10^{-3}$ & $10^{-3}$ \\
-				Weight decay & $10^{-4}$ & $2\times10^{-4}$ & $10^{-4}$ \\
-				Batch size & 16 & 32 & 128 \\
-				Max.\ epochs & 150 & 25 & 42 \\
-				Early-stop patience & 30 (val.\ loss) & 5 (val.\ loss) & 6 (val.\ acc.) \\
-				Validation split & Stratified 20\% & 15\% of pooled train & 15\% of pooled train \\
-				Data augmentation & -- & -- & Disabled (available: noise + time-shift) \\
-				Label smoothing & -- & -- & 0.05 \\
-				\bottomrule
-			\end{tabular}%
-		}
-	\end{table}
-	
-	\subsection{Computational Constraints on EEGNet Training}
-	\label{sec:constraints}
-	The EEGNet notebook's configuration explicitly documents a deliberate compute/accuracy trade-off:
-	the code comments identify \texttt{EPOCHS=42} and \texttt{PATIENCE=6} as a
-	\emph{``fast preset: lower EPOCHS/PATIENCE = faster but slightly lower accuracy''}, contrasted
-	against a recommended, higher-accuracy configuration of \texttt{EPOCHS=300},
-	\texttt{PATIENCE=30}, with data augmentation enabled. In practice, running the reduced,
-	42-epoch $\times$ 9-fold LOSO schedule on CPU took \textbf{over one hour}; the fully-specified
-	300-epoch schedule was estimated to require \textbf{approximately 7 or more hours} on the same
-	hardware, which was not feasible within the time available for this project. Consequently, several
-	LOSO folds triggered early stopping well before the epoch budget was exhausted (e.g.\ Subject~05 at
-	epoch~42, Subject~08 at epoch~22), while others (e.g.\ Subject~01, Subject~02) trained for the full
-	42 epochs without yet plateauing -- suggesting that \textbf{the EEGNet results reported here are a
-		conservative lower bound} on the architecture's achievable cross-subject accuracy, and that
-	additional training would plausibly close more of the gap to published EEGNet benchmarks on this
-	dataset. This constraint, and its implications, are revisited in Section~\ref{sec:discussion}.
-	
-	% ============================================================
-	\section{Results}
-	\label{sec:results}
-	% ============================================================
-	
-	\subsection{Experiment 1: Subject-Dependent Baseline}
-	\label{sec:results-exp1}
-	
-	\subsubsection{In-Sample Performance (Subject A01T)}
-	The sanity-check Logistic Regression on the 57-dimensional hybrid feature vector achieved a 5-fold
-	cross-validated training accuracy of $0.739 \pm 0.039$ and a held-out test accuracy of $0.793$,
-	confirming the features carry substantial discriminative signal for Subject~1 before investing in the
-	MLP. The MLP itself, trained for 65 epochs before early stopping (restoring the lowest validation-loss
-	weights), reached an \textbf{overall test accuracy of $0.759$} on the held-out $20\%$ split of Subject
-	A01T (macro-F1 $=0.760$), as detailed in Table~\ref{tab:exp1-perclass} and
-	Figure~\ref{fig:exp1-confmat}.
-	
-	\begin{table}[H]
-		\centering
-		\caption{Experiment 1 -- per-class test performance, Subject A01T (in-sample, held-out split).}
-		\label{tab:exp1-perclass}
-		\begin{tabular}{lcccc}
-			\toprule
-			\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Support} \\
-			\midrule
-			Left Hand   & 1.000 & 0.667 & 0.800 & 15 \\
-			Right Hand  & 0.722 & 0.929 & 0.812 & 14 \\
-			Feet        & 0.632 & 0.800 & 0.706 & 15 \\
-			Tongue      & 0.818 & 0.643 & 0.720 & 14 \\
-			\midrule
-			\textbf{Macro Avg.} & \textbf{0.793} & \textbf{0.760} & \textbf{0.760} & 58 \\
-			\bottomrule
-		\end{tabular}
-	\end{table}
-	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.55\linewidth]{../figures/confusion_matrix.png}
-		\caption{Confusion matrix for the MLP classifier evaluated on the held-out Subject A01T test split
-			(overall accuracy $=75.9\%$).}
-		\label{fig:exp1-confmat}
-	\end{figure}
-	
-	\subsubsection{Cross-Subject Generalization (Zero-Calibration Test on All Nine Subjects)}
-	The fully-fitted Subject-1 pipeline (fixed WPD sub-bands, CSP filters, scaler, and MLP weights) was
-	then applied, in pure inference mode, to Subjects A01T--A09T. Table~\ref{tab:exp1-crosssubject}
-	reports the resulting per-subject accuracy and macro-F1.
-	
-	\begin{table}[H]
-		\centering
-		\caption{Experiment 1 -- cross-subject generalization of the Subject-1-trained pipeline. A01T is the
-			trained (in-sample) subject; A02T--A09T are entirely unseen.}
-		\label{tab:exp1-crosssubject}
-		\begin{tabular}{lcccc}
-			\toprule
-			\textbf{Subject} & \textbf{N Trials} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Status} \\
-			\midrule
-			A01T & 58  & 0.759 & 0.760 & Trained (in-sample) \\
-			A02T & 288 & 0.316 & 0.254 & Unseen \\
-			A03T & 288 & 0.431 & 0.310 & Unseen \\
-			A04T & 288 & 0.326 & 0.296 & Unseen \\
-			A05T & 288 & 0.274 & 0.174 & Unseen \\
-			A06T & 288 & 0.253 & 0.113 & Unseen \\
-			A07T & 288 & 0.424 & 0.372 & Unseen \\
-			A08T & 288 & 0.257 & 0.115 & Unseen \\
-			A09T & 288 & 0.253 & 0.108 & Unseen \\
-			\midrule
-			\multicolumn{2}{l}{Mean, all 9 subjects} & \multicolumn{2}{c}{$0.366 \pm 0.163$} & -- \\
-			\multicolumn{2}{l}{Mean, unseen subjects (A02T--A09T)} & $0.317 \pm 0.074$ & $0.218$ & -- \\
-			\multicolumn{2}{l}{Chance level} & \multicolumn{2}{c}{$0.250$} & -- \\
-			\bottomrule
-		\end{tabular}
-	\end{table}
-	
-	\noindent The \textbf{generalization gap} -- the difference between in-sample accuracy and mean
-	unseen-subject accuracy -- is $0.759 - 0.317 = 0.442$, i.e.\ the model loses nearly \emph{44
-		percentage points} of accuracy when applied to a new individual. While every unseen subject still
-	performs above chance ($0.25$) on average, individual unseen subjects range from barely-above-chance
-	($0.253$, Subjects A06T and A09T) to moderately transferable ($0.431$, Subject A03T), illustrating
-	substantial \emph{subject-to-subject} heterogeneity even within the "unseen" group.
-	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=\linewidth]{../figures/cross_subject_generalization.png}
-		\caption{Left: per-subject test accuracy of the Subject-1-trained pipeline (blue = trained subject,
-			red = unseen subjects), with the chance-level reference line. Right: pooled confusion matrix across
-			the eight unseen subjects (A02T--A09T).}
-		\label{fig:exp1-crosssubject-fig}
-	\end{figure}
-	
-	\subsection{Experiment 2: Leave-One-Subject-Out with the Baseline Algorithm}
-	\label{sec:results-exp2}
-	
-	Table~\ref{tab:exp2-loso} reports the per-fold LOSO results for both the Hybrid WPD-CSP-MLP classifier
-	and the CSP+Logistic-Regression baseline, using the enlarged 138-dimensional feature vector, deeper
-	WPD decomposition, and Euclidean Alignment described in Section~\ref{sec:methodology}.
-	
-	\begin{table}[H]
-		\centering
-		\caption{Experiment 2 -- LOSO test results per held-out subject.}
-		\label{tab:exp2-loso}
+	\item \textbf{Separable temporal convolution.}
+	A depthwise convolution followed by a pointwise convolution further processes the resulting
+	$F_1{\times}D$ feature maps and combines them into $F_2$ output feature maps. This block is
+	followed by another batch normalization, ELU activation, average pooling, and dropout stage.
+\end{enumerate}
+
+The resulting feature maps are flattened and passed to a final fully connected layer that produces
+the logits for the four classes. Following the original EEGNet design, max-norm constraints are
+also applied after every optimizer step to two sets of weights: the depthwise-convolution kernel
+(max norm $1.0$) and the final dense layer (max norm $0.25$). These constraints provide an additional
+form of regularization, which is particularly useful given the relatively limited amount of training
+data available for each subject.
+
+\begin{table}[H]
+	\centering
+	\caption{EEGNet architectural hyperparameters used in Experiment 3.}
+	\label{tab:eegnet-hparams}
+	\begin{tabular}{ll}
+		\toprule
+		\textbf{Hyperparameter} & \textbf{Value} \\
+		\midrule
+		Temporal filters ($F_1$) & 8 \\
+		Depth multiplier ($D$) & 2 \\
+		Pointwise filters ($F_2$) & 16 \\
+		Temporal kernel length & 64 samples \\
+		Dropout rate & 0.5 \\
+		Depthwise max-norm & 1.0 \\
+		Dense max-norm & 0.25 \\
+		Input shape & $(1, 22, 513)$ -- (channel-dim, EEG channels, time samples) \\
+		Output classes & 4 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Validation Strategies}
+
+\subsubsection{Subject-Dependent Single-Subject Evaluation (Experiment 1)}
+
+For Experiment~1, the complete pipeline is fitted using only the data from Subject A01T. This
+includes the WPD sub-band selection, CSP spatial filters, feature scaler, and MLP weights. The
+subject's 288 trials are divided using a stratified $60\%/20\%/20\%$ train/validation/test split,
+resulting in $172$, $58$, and $58$ trials, respectively.
+
+Once trained, the complete pipeline is applied to Subjects A02T--A09T without any additional
+training or refitting. Every trial from these subjects is treated as a test trial because none
+of their data is used during model fitting. This setup provides a direct measurement of how well
+a model trained for one subject transfers to completely unseen subjects, and therefore gives a
+simple estimate of the zero-calibration cross-subject generalization gap.
+
+\subsubsection{Leave-One-Subject-Out Cross-Validation (Experiments 2 \& 3)}
+
+Experiments~2 and~3 use Leave-One-Subject-Out (LOSO) cross-validation. The procedure is repeated
+nine times, once for each subject. In each fold, one subject is kept entirely separate as the test
+set, while the remaining eight subjects are pooled together for training. A stratified $15\%$ subset
+of this training pool is further reserved for validation and, where applicable, early stopping.
+
+The model or feature-extraction pipeline is fitted from scratch for each fold, and the held-out
+subject is not used at any point during training or model selection. This setup provides a more
+reliable estimate of subject-independent, or zero-calibration, performance while still allowing
+every subject to serve as the test subject once.
+
+\subsection{Evaluation Metrics}
+
+The experiments are evaluated using several complementary metrics: \textbf{accuracy},
+\textbf{per-class precision, recall, and F1-score}, and \textbf{macro-averaged F1-score}.
+Confusion matrices are also reported both as raw class counts and as row-normalized matrices
+to make differences in class-wise performance easier to interpret.
+
+For Experiment~3, \textbf{Cohen's kappa} \cite{cohen1960kappa} is also reported. Kappa measures
+agreement beyond what would be expected by chance and is commonly used in BCI research, where
+accuracy alone can sometimes give an incomplete picture of performance. It is defined as
+
+\[
+\kappa = \frac{p_o - p_e}{1 - p_e},
+\]
+
+where $p_o$ is the observed accuracy and $p_e$ is the accuracy expected by chance based on the
+class marginals. Since all four classes in this dataset are perfectly balanced, the chance level
+used throughout the report is $p_e = 0.25$.
+% ============================================================
+\section{Experimental Setup and Computational Constraints}
+\label{sec:setup}
+% ============================================================
+
+\subsection{Software and Hardware Environment}
+
+All three notebooks were implemented in Python. MNE-Python \cite{gramfort2013mne} was used for EEG
+input/output and preprocessing, PyWavelets for Wavelet Packet Decomposition, scikit-learn for CSP,
+Logistic Regression, and evaluation metrics, and PyTorch \cite{paszke2019pytorch} for both the MLP
+and EEGNet models.
+
+A practical limitation of the experiments is that all three notebooks were run on CPU only, since
+no CUDA-capable GPU was available in the working environment. This limitation had the greatest
+effect on Experiment~3 and directly influenced the training budget chosen for EEGNet.
+
+\subsection{Hyperparameter Summary Across Experiments}
+
+Table~\ref{tab:hparam-comparison} summarizes the main preprocessing choices, model settings, and
+training hyperparameters used in the three experiments.
+
+\begin{table}[H]
+	\centering
+	\small
+	\caption{Consolidated hyperparameter comparison across the three experiments.}
+	\label{tab:hparam-comparison}
+	\resizebox{\linewidth}{!}{%
 		\begin{tabular}{lccc}
 			\toprule
-			\textbf{Test Subject} & \textbf{MLP Accuracy} & \textbf{Baseline (LogReg) Accuracy} & \textbf{Macro F1 (MLP)} \\
+			\textbf{Setting} & \textbf{Exp.\ 1 (Subj.-dep.)} & \textbf{Exp.\ 2 (LOSO hybrid)} & \textbf{Exp.\ 3 (EEGNet LOSO)} \\
 			\midrule
-			S01 & 0.566 & 0.503 & 0.511 \\
-			S02 & 0.247 & 0.285 & 0.157 \\
-			S03 & 0.524 & 0.493 & 0.504 \\
-			S04 & 0.347 & 0.306 & 0.294 \\
-			S05 & 0.295 & 0.285 & 0.229 \\
-			S06 & 0.285 & 0.333 & 0.183 \\
-			S07 & 0.351 & 0.285 & 0.298 \\
-			S08 & 0.569 & 0.524 & 0.568 \\
-			S09 & 0.424 & 0.420 & 0.379 \\
+			Band-pass filter & 8--30\,Hz & 8--30\,Hz & 4--38\,Hz \\
+			Epoch window (post-cue) & 0.5--3.5\,s & 0.5--3.5\,s & 0--4.0\,s \\
+			Sampling rate & 250\,Hz & 250\,Hz & 128\,Hz (resampled) \\
+			Cross-subject alignment & -- & Euclidean Alignment & Per-trial z-score \\
+			WPD wavelet / level & \texttt{db4} / 4 & \texttt{db4} / 5 & -- \\
+			Relevant sub-bands & 3 & 6 & -- \\
+			CSP components / sub-band & 4 & 8 & -- \\
+			Feature vector length & 57 & 138 & (end-to-end, no hand features) \\
+			Classifier & MLP (57-128-64-4) & MLP (138-128-64-4) & EEGNet ($F_1{=}8,D{=}2,F_2{=}16$) \\
+			Optimizer & Adam & Adam & Adam \\
+			Learning rate & $10^{-3}$ & $10^{-3}$ & $10^{-3}$ \\
+			Weight decay & $10^{-4}$ & $2\times10^{-4}$ & $10^{-4}$ \\
+			Batch size & 16 & 32 & 128 \\
+			Max.\ epochs & 150 & 25 & 42 \\
+			Early-stop patience & 30 (val.\ loss) & 5 (val.\ loss) & 6 (val.\ acc.) \\
+			Validation split & Stratified 20\% & 15\% of pooled train & 15\% of pooled train \\
+			Data augmentation & -- & -- & Disabled (available: noise + time-shift) \\
+			Label smoothing & -- & -- & 0.05 \\
+			\bottomrule
+		\end{tabular}%
+	}
+\end{table}
+
+\subsection{Computational Constraints on EEGNet Training}
+\label{sec:constraints}
+
+The EEGNet experiment was run under a deliberately limited training budget because of the available
+CPU-only hardware. The notebook defines \texttt{EPOCHS=42} and \texttt{PATIENCE=6} as a fast
+configuration, with the explicit trade-off that shorter training can reduce computation at the
+cost of some accuracy. The notebook also includes a more extensive configuration with
+\texttt{EPOCHS=300} and \texttt{PATIENCE=30}, together with data augmentation, intended to give
+the model more opportunity to learn.
+
+In practice, the reduced 42-epoch, 9-fold LOSO experiment took more than one hour to run on CPU.
+The full 300-epoch configuration was estimated to require approximately seven hours or more on the
+same hardware and was therefore not practical within the available project budget.
+
+The effect of this limitation can also be seen in the individual LOSO folds. Some folds reached the
+maximum allowed training budget without clearly plateauing; for example, Subjects~01 and~02 trained
+for the full 42 epochs. Other folds stopped earlier, such as Subject~08 at epoch~22, while
+Subject~05 reached epoch~42. These differences suggest that the shorter training schedule did not
+give every fold enough opportunity to fully optimize the model.
+
+For this reason, the EEGNet results reported in this study should be interpreted as the performance
+of a resource-constrained training configuration rather than as a measure of the model's full
+potential. A longer training schedule, together with the available augmentation strategy, could
+potentially improve cross-subject performance. This limitation is important when interpreting the
+comparison with the other approaches and is discussed further in Section~\ref{sec:discussion}.
+
+% ============================================================
+\section{Results}
+\label{sec:results}
+% ============================================================
+
+\subsection{Experiment 1: Subject-Dependent Baseline}
+\label{sec:results-exp1}
+
+\subsubsection{In-Sample Performance (Subject A01T)}
+
+As a first check, a Logistic Regression classifier was trained on the 57-dimensional hybrid
+feature vector. It achieved a 5-fold cross-validated training accuracy of $0.739 \pm 0.039$
+and a held-out test accuracy of $0.793$. This suggests that the extracted features contain
+a substantial amount of class-discriminative information for Subject~1 and provides a useful
+baseline before evaluating the MLP.
+
+The MLP was trained for 65 epochs before early stopping, with the weights corresponding to the
+lowest validation loss restored. On the held-out $20\%$ test split of Subject A01T, the model
+achieved an \textbf{overall accuracy of $0.759$} and a macro-F1 score of $0.760$. The detailed
+per-class results are shown in Table~\ref{tab:exp1-perclass}, and the corresponding confusion
+matrix is presented in Figure~\ref{fig:exp1-confmat}.
+
+\begin{table}[H]
+	\centering
+	\caption{Experiment 1 -- per-class test performance, Subject A01T (in-sample, held-out split).}
+	\label{tab:exp1-perclass}
+	\begin{tabular}{lcccc}
+		\toprule
+		\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Support} \\
+		\midrule
+		Left Hand   & 1.000 & 0.667 & 0.800 & 15 \\
+		Right Hand  & 0.722 & 0.929 & 0.812 & 14 \\
+		Feet        & 0.632 & 0.800 & 0.706 & 15 \\
+		Tongue      & 0.818 & 0.643 & 0.720 & 14 \\
+		\midrule
+		\textbf{Macro Avg.} & \textbf{0.793} & \textbf{0.760} & \textbf{0.760} & 58 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.55\linewidth]{../figures/confusion_matrix.png}
+	\caption{Confusion matrix for the MLP classifier evaluated on the held-out Subject A01T test split
+		(overall accuracy $=75.9\%$).}
+	\label{fig:exp1-confmat}
+\end{figure}
+
+\subsubsection{Cross-Subject Generalization (Zero-Calibration Test on All Nine Subjects)}
+
+After fitting the complete pipeline on Subject~1, including the WPD sub-band selection, CSP
+filters, feature scaler, and MLP weights, the model was applied directly to Subjects A01T--A09T.
+No part of the pipeline was refitted for the other subjects. The resulting accuracy and macro-F1
+scores are summarized in Table~\ref{tab:exp1-crosssubject}.
+
+\begin{table}[H]
+	\centering
+	\caption{Experiment 1 -- cross-subject generalization of the Subject-1-trained pipeline. A01T is the
+		trained (in-sample) subject; A02T--A09T are entirely unseen.}
+	\label{tab:exp1-crosssubject}
+	\begin{tabular}{lcccc}
+		\toprule
+		\textbf{Subject} & \textbf{N Trials} & \textbf{Accuracy} & \textbf{Macro F1} & \textbf{Status} \\
+		\midrule
+		A01T & 58  & 0.759 & 0.760 & Trained (in-sample) \\
+		A02T & 288 & 0.316 & 0.254 & Unseen \\
+		A03T & 288 & 0.431 & 0.310 & Unseen \\
+		A04T & 288 & 0.326 & 0.296 & Unseen \\
+		A05T & 288 & 0.274 & 0.174 & Unseen \\
+		A06T & 288 & 0.253 & 0.113 & Unseen \\
+		A07T & 288 & 0.424 & 0.372 & Unseen \\
+		A08T & 288 & 0.257 & 0.115 & Unseen \\
+		A09T & 288 & 0.253 & 0.108 & Unseen \\
+		\midrule
+		\multicolumn{2}{l}{Mean, all 9 subjects} & \multicolumn{2}{c}{$0.366 \pm 0.163$} & -- \\
+		\multicolumn{2}{l}{Mean, unseen subjects (A02T--A09T)} & $0.317 \pm 0.074$ & $0.218$ & -- \\
+		\multicolumn{2}{l}{Chance level} & \multicolumn{2}{c}{$0.250$} & -- \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\noindent
+The resulting \textbf{generalization gap} is large. The model achieves $0.759$ accuracy on
+the held-out trials from its training subject, but only $0.317 \pm 0.074$ on the eight unseen
+subjects. The difference is therefore
+
+\[
+0.759 - 0.317 = 0.442,
+\]
+
+corresponding to a loss of roughly \emph{44 percentage points} when the model is transferred
+to new individuals.
+
+The average performance on the unseen subjects is still slightly above the four-class chance
+level of $0.25$, but the individual results vary considerably. Accuracy ranges from $0.253$ for
+Subjects A06T and A09T, which is essentially at chance, to $0.431$ for Subject A03T. This spread
+shows that cross-subject transfer is not equally difficult for all subjects and that substantial
+differences in decodability remain even within the unseen group.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\linewidth]{../figures/cross_subject_generalization.png}
+	\caption{Left: per-subject test accuracy of the Subject-1-trained pipeline (blue = trained subject,
+		red = unseen subjects), with the chance-level reference line. Right: pooled confusion matrix across
+		the eight unseen subjects (A02T--A09T).}
+	\label{fig:exp1-crosssubject-fig}
+\end{figure}
+
+\subsection{Experiment 2: Leave-One-Subject-Out with the Baseline Algorithm}
+\label{sec:results-exp2}
+
+Table~\ref{tab:exp2-loso} summarizes the results of the LOSO experiment for both the Hybrid
+WPD-CSP-MLP model and the CSP+Logistic-Regression baseline. This experiment uses the larger
+138-dimensional feature vector, the deeper WPD decomposition, and Euclidean Alignment described
+in Section~\ref{sec:methodology}.
+
+\begin{table}[H]
+	\centering
+	\caption{Experiment 2 -- LOSO test results per held-out subject.}
+	\label{tab:exp2-loso}
+	\begin{tabular}{lccc}
+		\toprule
+		\textbf{Test Subject} & \textbf{MLP Accuracy} & \textbf{Baseline (LogReg) Accuracy} & \textbf{Macro F1 (MLP)} \\
+		\midrule
+		S01 & 0.566 & 0.503 & 0.511 \\
+		S02 & 0.247 & 0.285 & 0.157 \\
+		S03 & 0.524 & 0.493 & 0.504 \\
+		S04 & 0.347 & 0.306 & 0.294 \\
+		S05 & 0.295 & 0.285 & 0.229 \\
+		S06 & 0.285 & 0.333 & 0.183 \\
+		S07 & 0.351 & 0.285 & 0.298 \\
+		S08 & 0.569 & 0.524 & 0.568 \\
+		S09 & 0.424 & 0.420 & 0.379 \\
+		\midrule
+		\textbf{Mean $\pm$ SD} & $\mathbf{0.401 \pm 0.125}$ & $0.382 \pm 0.103$ & $0.347 \pm 0.152$ \\
+		Chance level & \multicolumn{3}{c}{0.250} \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\noindent
+The Hybrid WPD-CSP-MLP model achieves a mean LOSO accuracy of $0.401 \pm 0.125$, compared
+with $0.382 \pm 0.103$ for the CSP+Logistic-Regression baseline. The difference is relatively
+small, but the MLP also performs better than the mean unseen-subject accuracy obtained in
+Experiment~1 ($0.317 \pm 0.074$).
+
+One likely reason for this improvement is that the LOSO model is trained using data from eight
+different subjects in each fold. Instead of learning primarily from the characteristics of a
+single individual, the model is exposed to a wider range of EEG patterns during training.
+This gives the learned spatial filters and decision boundaries a better chance of handling
+the variability encountered in the held-out subject, even though the experiment does not use
+an explicit domain-adaptation method beyond Euclidean Alignment.
+
+There is still considerable variation between folds. Subject~S08 is the easiest subject to
+generalize to, with an accuracy of $0.569$, whereas S02 is the most difficult, with an accuracy
+of $0.247$, which is essentially the four-class chance level. A similar pattern of
+subject-dependent difficulty also appears in Experiment~3.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\linewidth]{../figures/loso_accuracy_by_subject.png}
+	\caption{LOSO test accuracy per held-out subject for the Hybrid WPD-CSP-MLP classifier compared
+		against the CSP+Logistic-Regression baseline, with the LOSO-MLP mean and chance-level reference
+		lines.}
+	\label{fig:exp2-accuracy}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.55\linewidth]{../figures/confusion_matrix_pooled.png}
+	\caption{Pooled confusion matrix across all nine LOSO folds (Hybrid WPD-CSP-MLP), row-normalized with
+		raw counts annotated.}
+	\label{fig:exp2-pooled-cm}
+\end{figure}
+\subsubsection{Quantifying the Domain Shift: Pairwise Transfer Analysis}
+
+To get a more direct picture of the inter-subject domain shift, an additional $9\times9$ pairwise
+transfer experiment was performed using the faster CSP+Logistic-Regression pipeline. For every
+ordered pair of subjects $(i,j)$, the model was trained on all available data from subject $i$
+and then tested on all data from subject $j$. The diagonal entries were handled differently:
+they represent within-subject held-out performance using a $70\%/30\%$ train/test split from the
+same subject. This provides a direct comparison between within-subject performance and
+subject-to-subject transfer.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.65\linewidth]{../figures/pairwise_transfer_heatmap.png}
+	\caption{Pairwise cross-subject transfer accuracy matrix (CSP + Logistic Regression). Diagonal
+		entries are within-subject held-out accuracy; off-diagonal entries are direct subject-to-subject
+		transfer accuracy.}
+	\label{fig:pairwise-transfer}
+\end{figure}
+
+\noindent
+The difference between the two settings is substantial. The mean \textbf{within-subject} accuracy
+across the diagonal entries is $\mathbf{0.656}$, whereas the mean \textbf{cross-subject} accuracy
+across the off-diagonal entries is only $\mathbf{0.254}$, which is essentially the four-class
+chance level of $0.25$.
+
+This provides one of the clearest demonstrations in the study of the difficulty of transferring
+CSP-based models between subjects. Spatial filters learned from one subject's covariance structure
+do not transfer well to another subject's covariance structure when the model is trained on only
+one individual. The results also help explain why the approaches that either expose the model to
+multiple subjects during training, as in the LOSO experiments, or explicitly reduce subject-specific
+differences through alignment can perform better.
+
+\subsection{Experiment 3: Deep Learning via EEGNet with LOSO}
+\label{sec:results-exp3}
+
+\begin{table}[H]
+	\centering
+	\caption{Experiment 3 -- EEGNet LOSO test results per held-out subject, including subsequent
+		subject-specific fine-tuning results (Section~\ref{sec:results-exp3-ft}).}
+	\label{tab:exp3-loso}
+	\resizebox{\linewidth}{!}{%
+		\begin{tabular}{lccc}
+			\toprule
+			\textbf{Test Subject} & \textbf{Zero-Shot Accuracy} & \textbf{Cohen's $\kappa$} & \textbf{Fine-Tuned Accuracy} \\
 			\midrule
-			\textbf{Mean $\pm$ SD} & $\mathbf{0.401 \pm 0.125}$ & $0.382 \pm 0.103$ & $0.347 \pm 0.152$ \\
+			S01 & 0.660 & 0.546 & 0.674 \\
+			S02 & 0.299 & 0.065 & 0.319 \\
+			S03 & 0.587 & 0.449 & 0.660 \\
+			S04 & 0.403 & 0.204 & 0.424 \\
+			S05 & 0.257 & 0.009 & 0.257 \\
+			S06 & 0.351 & 0.134 & 0.424 \\
+			S07 & 0.347 & 0.130 & 0.396 \\
+			S08 & 0.497 & 0.329 & 0.569 \\
+			S09 & 0.552 & 0.403 & 0.563 \\
+			\midrule
+			\textbf{Mean $\pm$ SD} & $\mathbf{0.439 \pm 0.140}$ & $0.252$ & $\mathbf{0.476}$ \\
+			CSP+MLP LOSO baseline (Exp.\ 2) & \multicolumn{3}{c}{0.401 (rounded to 0.400 in-notebook)} \\
 			Chance level & \multicolumn{3}{c}{0.250} \\
 			\bottomrule
-		\end{tabular}
-	\end{table}
-	
-	\noindent The Hybrid WPD-CSP-MLP classifier attains a mean LOSO accuracy of $0.401 \pm 0.125$, modestly
-	but consistently above both the CSP+LogReg baseline ($0.382 \pm 0.103$) and, importantly, above the
-	mean unseen-subject accuracy from the naive single-subject baseline of Experiment~1 ($0.317 \pm
-	0.074$). This confirms the expected benefit of pooling multiple subjects' data during training (even
-	without any explicit domain-adaptation objective beyond Euclidean Alignment): the LOSO-trained model
-	sees a wider range of individual variability during fitting and produces spatial filters and decision
-	boundaries that are somewhat less overfit to any single subject's idiosyncrasies. Subject~S08 is the
-	easiest to generalize to ($0.569$) and Subject~S02 the hardest ($0.247$, at chance level), a pattern
-	of subject-dependent decodability difficulty that recurs in Experiment~3.
-	
-	\begin{figure}[H]
+		\end{tabular}%
+	}
+\end{table}
+
+EEGNet achieves a \textbf{mean zero-shot LOSO accuracy of $0.439 \pm 0.140$} and a
+\textbf{mean Cohen's $\kappa$ of $0.252$}. This is an absolute improvement of $0.039$, or
+roughly 4 percentage points, over the Experiment~2 CSP+MLP LOSO result. The comparison is
+particularly interesting because EEGNet does not rely on the hand-engineered spatial and
+spectral features used by the hybrid pipeline. Instead, the network learns its temporal and
+spatial filters directly from the EEG data.
+
+The improvement is not uniform across subjects. As in Experiment~2, some subjects are much easier
+to decode than others. Subject~S01 achieves the highest EEGNet accuracy at $0.660$, while S05
+and S02 remain close to chance, with accuracies of $0.257$ and $0.299$, respectively. This
+subject-dependent pattern appears in both the hybrid and deep-learning approaches. The consistency
+suggests that at least part of the difficulty is related to differences in the recordings
+themselves, such as the strength of the motor-imagery-related signal or the amount of noise and
+artifact, rather than being caused solely by the choice of classifier.
+
+The class-wise results also show a tendency for Left and Right Hand trials to be decoded more
+reliably than Feet and Tongue trials. This pattern is consistent with the stronger spatial
+lateralization that is often associated with hand motor imagery. The aggregated confusion matrix
+across the LOSO folds, although not shown here, reflects the same general pattern.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\linewidth]{../figures/final_loso_test_summary.png}
+	\caption{LOSO test accuracy per subject for EEGNet, with reference lines for the CSP+MLP LOSO
+		baseline mean ($40\%$) and chance level ($25\%$), and the overall EEGNet mean $\pm 1$ SD band.}
+	\label{fig:exp3-accuracy}
+\end{figure}
+
+\subsubsection{Subject-Specific Fine-Tuning (Calibration)}
+\label{sec:results-exp3-ft}
+
+To examine a more realistic deployment scenario, each EEGNet model trained under LOSO was
+subsequently fine-tuned using half of the previously unseen target subject's data. This corresponds
+to a $50\%$ calibration split, followed by 10 additional training epochs at a reduced learning rate.
+The fine-tuned model was then evaluated on the remaining $50\%$ of that subject's trials. The
+zero-shot and fine-tuned results are reported in Table~\ref{tab:exp3-loso}.
+
+Fine-tuning increased the mean accuracy from $0.439$ to $\mathbf{0.476}$, an absolute improvement
+of $3.7$ percentage points using only $144$ calibration trials per subject. Every subject either
+improved or maintained its zero-shot accuracy. For example, S06 increased from $0.351$ to $0.424$,
+while S08 increased from $0.497$ to $0.569$. S05 was the only subject with no improvement, remaining
+at $0.257$.
+
+These results suggest that a relatively small amount of subject-specific calibration can be useful
+when a completely subject-independent model is not accurate enough. In this experiment, the
+calibration step helped narrow the gap between zero-shot transfer and subject-specific decoding
+without requiring the model to be retrained from scratch for the new subject.
+
+\subsection{Comparative Analysis Across All Three Experiments}
+\label{sec:comparative}
+
+\begin{table}[H]
+	\centering
+	\caption{Summary comparison of cross-subject / LOSO mean accuracy across all experimental
+		approaches.}
+	\label{tab:overall-comparison}
+	\resizebox{\linewidth}{!}{%
+		\begin{tabular}{lccc}
+			\toprule
+			\textbf{Approach} & \textbf{Mean Accuracy} & \textbf{Macro F1 / $\kappa$} & \textbf{Validation Scheme} \\
+			\midrule
+			Exp.\ 1: Subject-dependent (in-sample, A01T) & 0.759 & F1 = 0.760 & Single-subject held-out split \\
+			Exp.\ 1: Subject-dependent (unseen, A02T--A09T) & 0.317 $\pm$ 0.074 & F1 = 0.218 & Zero-calibration transfer \\
+			Exp.\ 2: LOSO, CSP+LogReg baseline & 0.382 $\pm$ 0.103 & -- & LOSO (9-fold) \\
+			Exp.\ 2: LOSO, Hybrid WPD-CSP-MLP & 0.401 $\pm$ 0.125 & F1 = 0.347 & LOSO (9-fold) \\
+			Exp.\ 3: LOSO, EEGNet (zero-shot) & \textbf{0.439 $\pm$ 0.140} & $\kappa$ = 0.252 & LOSO (9-fold) \\
+			Exp.\ 3: LOSO, EEGNet (fine-tuned) & \textbf{0.476} & -- & LOSO + 50\% calibration \\
+			\midrule
+			Chance level (4 balanced classes) & 0.250 & -- & -- \\
+			\bottomrule
+		\end{tabular}%
+	}
+\end{table}
+
+The results in Table~\ref{tab:overall-comparison} show a clear progression across the three
+experiments. When the model is trained only on one subject, performance on unseen subjects drops
+to $0.317 \pm 0.074$. Training on multiple subjects through the LOSO setup improves the hybrid
+WPD-CSP-MLP result to $0.401 \pm 0.125$. Replacing the hand-engineered feature pipeline with
+EEGNet increases the zero-shot LOSO accuracy further to $0.439 \pm 0.140$. Finally, adding a
+short subject-specific calibration step raises the mean accuracy to $0.476$.
+
+Taken together, these results suggest that both broader exposure to inter-subject variability
+during training and learned representations can help with cross-subject MI-EEG decoding. The
+fine-tuning results also show that even limited access to data from the target subject can provide
+a further improvement. At the same time, the EEGNet result should be interpreted in light of the
+restricted training budget described in Section~\ref{sec:constraints}.
+
+% ============================================================
+\subsection{Side-by-Side Comparison of the Three Final Per-Subject Accuracy Charts}
+\label{sec:side-by-side}
+% ============================================================
+
+Each of the three notebooks ends with a summary chart showing the accuracy for all nine subjects.
+Figure~\ref{fig:three-final-charts} brings these three charts together in a single row, making it
+easier to compare the overall performance and the subject-level patterns across the experiments.
+A short description is provided below each panel to highlight the main results.
+
+\begin{figure}[H]
+	\centering
+	\begin{minipage}[t]{0.32\linewidth}
 		\centering
-		\includegraphics[width=0.85\linewidth]{../figures/loso_accuracy_by_subject.png}
-		\caption{LOSO test accuracy per held-out subject for the Hybrid WPD-CSP-MLP classifier compared
-			against the CSP+Logistic-Regression baseline, with the LOSO-MLP mean and chance-level reference
-			lines.}
-		\label{fig:exp2-accuracy}
-	\end{figure}
-	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.55\linewidth]{../figures/confusion_matrix_pooled.png}
-		\caption{Pooled confusion matrix across all nine LOSO folds (Hybrid WPD-CSP-MLP), row-normalized with
-			raw counts annotated.}
-		\label{fig:exp2-pooled-cm}
-	\end{figure}
-	
-	\subsubsection{Quantifying the Domain Shift: Pairwise Transfer Analysis}
-	To directly visualize the magnitude of inter-subject domain shift, a $9\times9$ pairwise transfer
-	experiment was additionally run using the faster CSP+Logistic-Regression pipeline: for every ordered
-	pair of subjects $(i,j)$, a model is fit on all of subject $i$'s data and tested on all of subject
-	$j$'s data (off-diagonal), while the diagonal reports proper within-subject held-out accuracy (a
-	$70\%/30\%$ split of the \emph{same} subject).
-	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.65\linewidth]{../figures/pairwise_transfer_heatmap.png}
-		\caption{Pairwise cross-subject transfer accuracy matrix (CSP + Logistic Regression). Diagonal
-			entries are within-subject held-out accuracy; off-diagonal entries are direct subject-to-subject
-			transfer accuracy.}
-		\label{fig:pairwise-transfer}
-	\end{figure}
-	
-	\noindent The mean \textbf{within-subject} accuracy (diagonal) is $\mathbf{0.656}$, while the mean
-	\textbf{cross-subject} accuracy (off-diagonal) is only $\mathbf{0.254}$ -- statistically
-	indistinguishable from the $0.25$ chance level. This stark contrast is perhaps the single clearest
-	piece of evidence in this study that hand-engineered CSP-based spatial filters, fit on one subject's
-	covariance structure, essentially fail to transfer to a different subject's covariance structure
-	whatsoever without either (a) pooling many subjects during fitting (as in LOSO) or (b) an explicit
-	alignment/adaptation step.
-	
-	\subsection{Experiment 3: Deep Learning via EEGNet with LOSO}
-	\label{sec:results-exp3}
-	
-	\begin{table}[H]
-		\centering
-		\caption{Experiment 3 -- EEGNet LOSO test results per held-out subject, including subsequent
-			subject-specific fine-tuning results (Section~\ref{sec:results-exp3-ft}).}
-		\label{tab:exp3-loso}
-		\resizebox{\linewidth}{!}{%
-			\begin{tabular}{lccc}
-				\toprule
-				\textbf{Test Subject} & \textbf{Zero-Shot Accuracy} & \textbf{Cohen's $\kappa$} & \textbf{Fine-Tuned Accuracy} \\
-				\midrule
-				S01 & 0.660 & 0.546 & 0.674 \\
-				S02 & 0.299 & 0.065 & 0.319 \\
-				S03 & 0.587 & 0.449 & 0.660 \\
-				S04 & 0.403 & 0.204 & 0.424 \\
-				S05 & 0.257 & 0.009 & 0.257 \\
-				S06 & 0.351 & 0.134 & 0.424 \\
-				S07 & 0.347 & 0.130 & 0.396 \\
-				S08 & 0.497 & 0.329 & 0.569 \\
-				S09 & 0.552 & 0.403 & 0.563 \\
-				\midrule
-				\textbf{Mean $\pm$ SD} & $\mathbf{0.439 \pm 0.140}$ & $0.252$ & $\mathbf{0.476}$ \\
-				CSP+MLP LOSO baseline (Exp.\ 2) & \multicolumn{3}{c}{0.401 (rounded to 0.400 in-notebook)} \\
-				Chance level & \multicolumn{3}{c}{0.250} \\
-				\bottomrule
-			\end{tabular}%
+		\includegraphics[width=\linewidth]{../figures/overall_generalization_summary.png}\\[0.25cm]
+		{\small\textbf{(a) Experiment 1 -- Subject-Dependent}}\\[0.15cm]
+		{\footnotesize
+			Naive pipeline trained on Subject~A01T only, then tested on all nine subjects. A01T (in-sample)
+			scores $0.759$; the eight unseen subjects average $0.317 \pm 0.074$. Best unseen: A03T ($0.431$).
+			Worst: A06T and A09T (tied, $0.253$, at chance).
 		}
-	\end{table}
-	
-	EEGNet, trained end-to-end under the identical LOSO protocol but with a substantially reduced training
-	budget (Section~\ref{sec:constraints}), achieves a \textbf{mean zero-shot LOSO accuracy of $0.439 \pm
-		0.140$} and a \textbf{mean Cohen's $\kappa$ of $0.252$}, an improvement of $+0.039$ (roughly $+4$
-	percentage points) over the Experiment~2 CSP+MLP LOSO baseline, despite EEGNet receiving no
-	hand-engineered spatial or spectral priors whatsoever -- it must learn its own temporal filters
-	(analogous to band-pass filtering) and spatial filters (analogous to CSP) directly from data.
-	
-	\begin{figure}[H]
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.32\linewidth}
 		\centering
-		\includegraphics[width=0.85\linewidth]{../figures/final_loso_test_summary.png}
-		\caption{LOSO test accuracy per subject for EEGNet, with reference lines for the CSP+MLP LOSO
-			baseline mean ($40\%$) and chance level ($25\%$), and the overall EEGNet mean $\pm 1$ SD band.}
-		\label{fig:exp3-accuracy}
-	\end{figure}
-	
-	The same easy/hard subject pattern observed in Experiment~2 persists here: Subject~S01 is the most
-	decodable across both hybrid and deep-learning pipelines ($0.660$ for EEGNet vs.\ $0.566$ for the
-	hybrid MLP), while Subject~S05 and Subject~S02 remain the most difficult, both near chance for both
-	approaches. This consistency suggests that the difficulty is intrinsic to those subjects' recordings
-	(e.g.\ weaker or noisier motor-imagery-related cortical activity, or greater susceptibility to
-	artifact) rather than an artifact of either particular modelling approach. The aggregated confusion
-	pattern across folds (not shown) mirrors the class-wise trends already visible in
-	Table~\ref{tab:exp3-loso}: Left/Right Hand trials are decoded more reliably on average than Feet and
-	Tongue trials, consistent with the stronger, more lateralized ERD typically associated with hand
-	motor imagery.
-	
-	\subsubsection{Subject-Specific Fine-Tuning (Calibration)}
-	\label{sec:results-exp3-ft}
-	As a realistic deployment scenario, each LOSO-trained EEGNet model was further fine-tuned on half of
-	the target (previously unseen) subject's own data (a $50\%$ calibration split) for 10 additional
-	epochs at a reduced learning rate, then evaluated on the remaining $50\%$ of that subject's data. The
-	zero-shot vs.\ fine-tuned accuracy for each subject is reported in the last two columns of
-	Table~\ref{tab:exp3-loso}.
-	
-	\noindent Fine-tuning raised the mean accuracy from $0.439$ (zero-shot) to $\mathbf{0.476}$, an
-	absolute improvement of $+3.7$ percentage points from only $144$ calibration trials per subject
-	(half of one subject's recording). Every subject improved or matched its zero-shot performance under
-	fine-tuning (e.g.\ S06 improved from $0.351$ to $0.424$; S08 from $0.497$ to $0.569$), with only
-	Subject~S05 showing no change, consistent with that subject's data appearing to carry very little
-	class-discriminative motor-imagery signal under either pipeline. This result directly demonstrates
-	that a brief, low-cost calibration phase is a practical and effective strategy for narrowing the
-	cross-subject domain-shift gap in deployed BCIs.
-	
-	\subsection{Comparative Analysis Across All Three Experiments}
-	\label{sec:comparative}
-	
-	\begin{table}[H]
-		\centering
-		\caption{Summary comparison of cross-subject / LOSO mean accuracy across all experimental
-			approaches.}
-		\label{tab:overall-comparison}
-		\resizebox{\linewidth}{!}{%
-			\begin{tabular}{lccc}
-				\toprule
-				\textbf{Approach} & \textbf{Mean Accuracy} & \textbf{Macro F1 / $\kappa$} & \textbf{Validation Scheme} \\
-				\midrule
-				Exp.\ 1: Subject-dependent (in-sample, A01T) & 0.759 & F1 = 0.760 & Single-subject held-out split \\
-				Exp.\ 1: Subject-dependent (unseen, A02T--A09T) & 0.317 $\pm$ 0.074 & F1 = 0.218 & Zero-calibration transfer \\
-				Exp.\ 2: LOSO, CSP+LogReg baseline & 0.382 $\pm$ 0.103 & -- & LOSO (9-fold) \\
-				Exp.\ 2: LOSO, Hybrid WPD-CSP-MLP & 0.401 $\pm$ 0.125 & F1 = 0.347 & LOSO (9-fold) \\
-				Exp.\ 3: LOSO, EEGNet (zero-shot) & \textbf{0.439 $\pm$ 0.140} & $\kappa$ = 0.252 & LOSO (9-fold) \\
-				Exp.\ 3: LOSO, EEGNet (fine-tuned) & \textbf{0.476} & -- & LOSO + 50\% calibration \\
-				\midrule
-				Chance level (4 balanced classes) & 0.250 & -- & -- \\
-				\bottomrule
-			\end{tabular}%
+		\includegraphics[width=\linewidth]{../figures/subject_accuracy_percent_mean_only.png}\\[0.25cm]
+		{\small\textbf{(b) Experiment 2 -- LOSO Hybrid WPD-CSP-MLP}}\\[0.15cm]
+		{\footnotesize
+			Leave-One-Subject-Out accuracy for the hand-engineered WPD+CSP+MLP pipeline, all nine subjects
+			now pooled during training. Mean accuracy $0.401 \pm 0.125$. Best: S08 ($0.569$), closely followed
+			by S01 ($0.566$). Worst: S02 ($0.247$, at chance).
 		}
-	\end{table}
-	
-	The results in Table~\ref{tab:overall-comparison} tell a
-	consistent, monotonic story: (i) naive single-subject training generalizes worst
-	($0.317$); (ii) pooling all subjects via LOSO cross-validation with the \emph{same} hand-engineered
-	feature pipeline recovers a modest but real improvement ($0.401$); and (iii) replacing hand-engineered
-	features with an end-to-end learned representation (EEGNet), evaluated under the identical LOSO
-	protocol, yields the best cross-subject performance of all ($0.439$), which is further improved by a
-	brief per-subject calibration step ($0.476$) -- and this is despite EEGNet operating under a
-	significantly constrained training budget, as discussed next.
-	
-	% ============================================================
-	\subsection{Side-by-Side Comparison of the Three Final Per-Subject Accuracy Charts}
-	\label{sec:side-by-side}
-	% ============================================================
-	
-	Each of the three notebooks concludes with its own summary chart plotting per-subject accuracy
-	across all nine subjects. Figure~\ref{fig:three-final-charts} places these three charts side by side,
-	in the same horizontal row, with a short explanation directly underneath each one.
-	
-	\begin{figure}[H]
+	\end{minipage}
+	\hfill
+	\begin{minipage}[t]{0.32\linewidth}
 		\centering
-		\begin{minipage}[t]{0.32\linewidth}
-			\centering
-			\includegraphics[width=\linewidth]{../figures/overall_generalization_summary.png}\\[0.25cm]
-			{\small\textbf{(a) Experiment 1 -- Subject-Dependent}}\\[0.15cm]
-			{\footnotesize
-				Naive pipeline trained on Subject~A01T only, then tested on all nine subjects. A01T (in-sample)
-				scores $0.759$; the eight unseen subjects average $0.317 \pm 0.074$. Best unseen: A03T ($0.431$).
-				Worst: A06T and A09T (tied, $0.253$, at chance).
-			}
-		\end{minipage}
-		\hfill
-		\begin{minipage}[t]{0.32\linewidth}
-			\centering
-			\includegraphics[width=\linewidth]{../figures/subject_accuracy_percent_mean_only.png}\\[0.25cm]
-			{\small\textbf{(b) Experiment 2 -- LOSO Hybrid WPD-CSP-MLP}}\\[0.15cm]
-			{\footnotesize
-				Leave-One-Subject-Out accuracy for the hand-engineered WPD+CSP+MLP pipeline, all nine subjects
-				now pooled during training. Mean accuracy $0.401 \pm 0.125$. Best: S08 ($0.569$), closely followed
-				by S01 ($0.566$). Worst: S02 ($0.247$, at chance).
-			}
-		\end{minipage}
-		\hfill
-		\begin{minipage}[t]{0.32\linewidth}
-			\centering
-			\includegraphics[width=\linewidth]{../figures/final_loso_test_summary.png}\\[0.25cm]
-			{\small\textbf{(c) Experiment 3 -- LOSO EEGNet}}\\[0.15cm]
-			{\footnotesize
-				Leave-One-Subject-Out accuracy for the end-to-end EEGNet classifier, same protocol as (b) but with
-				learned rather than hand-engineered features. Mean accuracy $0.439 \pm 0.140$ ($\kappa = 0.252$).
-				Best: S01 ($0.660$). Worst: S05 ($0.257$, at chance), with S02 close behind ($0.299$).
-			}
-		\end{minipage}
-		\caption{The three end-of-notebook per-subject accuracy summary charts, arranged side by side, with
-			a brief explanation directly beneath each: (a) the naive single-subject-trained pipeline, (b) the
-			LOSO Hybrid WPD-CSP-MLP classifier, and (c) the LOSO EEGNet classifier. All three plot the same nine
-			subjects, allowing a direct visual comparison of both the overall accuracy level and the
-			subject-to-subject pattern across approaches.}
-		\label{fig:three-final-charts}
-	\end{figure}
+		\includegraphics[width=\linewidth]{../figures/final_loso_test_summary.png}\\[0.25cm]
+		{\small\textbf{(c) Experiment 3 -- LOSO EEGNet}}\\[0.15cm]
+		{\footnotesize
+			Leave-One-Subject-Out accuracy for the end-to-end EEGNet classifier, same protocol as (b) but with
+			learned rather than hand-engineered features. Mean accuracy $0.439 \pm 0.140$ ($\kappa = 0.252$).
+			Best: S01 ($0.660$). Worst: S05 ($0.257$, at chance), with S02 close behind ($0.299$).
+		}
+	\end{minipage}
+	\caption{The three end-of-notebook per-subject accuracy summary charts, arranged side by side, with
+		a brief explanation directly beneath each: (a) the naive single-subject-trained pipeline, (b) the
+		LOSO Hybrid WPD-CSP-MLP classifier, and (c) the LOSO EEGNet classifier. All three plot the same nine
+		subjects, allowing a direct visual comparison of both the overall accuracy level and the
+		subject-to-subject pattern across approaches.}
+	\label{fig:three-final-charts}
+\end{figure}
+
+\subsubsection{Overall Results}
+
+Looking at the three panels together makes the progression across the experiments clear. In
+panel~(a), performance on the unseen subjects remains close to the $0.25$ chance level, with a
+mean accuracy of $0.317$. In panel~(b), the bars generally move upward after multiple subjects
+are included during training, giving a mean LOSO accuracy of $0.401$. Panel~(c) shows a further
+increase with EEGNet, reaching a mean accuracy of $0.439$.
+
+The improvement is therefore not limited to a single subject. Instead, the overall level of
+performance shifts upward from the single-subject transfer setting to LOSO training and then to
+the EEGNet-based approach. Several subjects, particularly S01, S03, and S09, reach accuracies
+above $0.55$ with EEGNet, whereas the hand-engineered pipelines generally remain below this level
+except for the in-sample A01T result in panel~(a).
+
+\subsubsection{Best- and Worst-Performing Subjects}
+
+The three panels also reveal a noticeable pattern at the subject level. \textbf{Subject~01}
+is consistently one of the easiest subjects to decode. It achieves the highest in-sample
+accuracy in panel~(a) at $0.759$, ranks among the strongest subjects in panel~(b), and reaches
+the highest accuracy in panel~(c) at $0.660$. \textbf{Subject~03} shows a similar pattern:
+it is the best-performing unseen subject in Experiment~1 and remains among the stronger subjects
+in both LOSO experiments.
+
+At the other end of the range, \textbf{Subject~02} performs poorly across all three settings:
+$0.316$ in the unseen-subject evaluation of Experiment~1, $0.247$ in the hybrid LOSO experiment,
+and $0.299$ with EEGNet. \textbf{Subject~05} shows a similarly weak pattern, with accuracies of
+$0.274$, $0.295$, and $0.257$, respectively.
+
+The fact that these subjects remain difficult across different preprocessing and modelling
+choices suggests that the observed performance differences are not explained by a single
+classifier alone. Differences in signal quality, the strength of the motor-imagery response,
+or the amount of subject-specific noise may be contributing to the difficulty. However, the
+present experiments do not isolate the individual contribution of these factors, so this
+interpretation should be treated as a plausible explanation rather than a definitive one.
+
+\subsubsection{General Performance Pattern}
+
+An additional point becomes visible when considering the spread of the results rather than only
+their mean. The standard deviation across subjects increases from panel~(a) to panel~(c),
+from $0.074$ to $0.125$ and then to $0.140$, even though the mean accuracy improves.
+
+This means that the gains from moving to LOSO training and then to EEGNet are not distributed
+equally across subjects. Subjects that are already relatively easy to decode, such as S01, S03,
+S08, and S09, tend to benefit more from the stronger approaches. In contrast, the most difficult
+subjects, particularly S02 and S05, remain close to the $0.25$ chance level.
+
+This pattern is consistent with the pairwise-transfer results in Section~\ref{sec:results-exp2}
+(Figure~\ref{fig:pairwise-transfer}), which also showed a large difference between within-subject
+and cross-subject performance. Taken together, the results suggest that part of the cross-subject
+gap is related to persistent differences between individuals that are not fully removed simply
+by changing the feature representation or classifier.
+
+% ============================================================
+\section{Discussion}
+\label{sec:discussion}
+% ============================================================
+
+\subsection{Domain Shift Across Subjects}
+
+The pairwise transfer-accuracy heatmap in Figure~\ref{fig:pairwise-transfer} provides a clear
+view of the domain shift present in this dataset. The mean within-subject accuracy is $0.656$,
+whereas direct cross-subject transfer reaches only $0.254$, which is essentially the four-class
+chance level.
+
+One important reason is that CSP learns spatial filters from the covariance structure of the
+subject used for training. That structure can differ substantially across individuals because
+of factors such as skull and scalp conductivity, cortical anatomy, electrode placement, and
+differences in how subjects perform motor imagery. A spatial pattern that is useful for one
+subject may therefore be much less useful for another.
+
+The WPD-based statistical features can be affected by similar differences. For example, the
+distribution of signal energy across the mu and beta ranges may vary between subjects, meaning
+that a feature that is informative for one individual is not necessarily equally informative
+for another. The pairwise results therefore provide a useful explanation for why a model that
+works well within one subject can perform close to chance when transferred directly to someone
+else.
+
+\subsection{Why LOSO Training Helps, But Only Modestly}
+
+In Experiment~2, the model is trained using data from eight subjects rather than a single
+individual. This exposes the feature-extraction and classification stages to a wider range of
+EEG patterns before they are evaluated on the held-out subject. The improvement from
+$0.317$ in the single-subject transfer experiment to $0.401$ with LOSO is consistent with this
+effect.
+
+However, the improvement is still limited. Training on several subjects does not remove the
+underlying differences between them; instead, the learned model has to find features and
+decision boundaries that work reasonably well across a heterogeneous group. In that sense, the
+result is a compromise across subjects rather than a representation explicitly adapted to the
+distribution of the held-out individual.
+
+This also helps explain why Euclidean Alignment alone does not close the entire performance
+gap. It reduces part of the subject-specific variation in the covariance structure, but it does
+not account for every difference between subjects or for differences in the discriminative
+patterns themselves.
+
+\subsection{Why Deep Representations (EEGNet) Generalize Better}
+
+EEGNet performs somewhat better than the hybrid pipeline in the LOSO setting, although the
+difference is not large. There are several reasonable explanations for this result:
+
+\begin{itemize}[leftmargin=1.2cm]
+	\item \textbf{Wider, jointly learned temporal filters.}
+	EEGNet learns $F_1=8$ temporal filters directly from the $4$--$38$\,Hz input rather than
+	being restricted to the manually selected $8$--$30$\,Hz range used in the hybrid pipeline.
+	This gives the model the opportunity to use frequency information outside the narrower
+	mu+beta band when it is helpful for classification.
 	
-	\subsubsection{Overall Results}
-	Read together, the three panels visually confirm the ordering already established in
-	Table~\ref{tab:overall-comparison}: the bars in panel~(a) sit lowest and closest to the $0.25$
-	chance line for every unseen subject, panel~(b) shows a broadly higher bar for almost every subject
-	once all nine subjects are pooled during training (LOSO), and panel~(c) shows the highest bars
-	overall, with several subjects (S01, S03, S09) clearing $0.55$--$0.66$ accuracy under EEGNet -- a
-	level neither hand-engineered pipeline reaches for any subject except the in-sample A01T bar in
-	panel~(a). The mean accuracy rises step-by-step from left to right ($0.317 \rightarrow 0.401
-	\rightarrow 0.439$), and this improvement is visible as a general upward shift of the whole bar
-	pattern rather than a change concentrated in one or two subjects.
+	\item \textbf{End-to-end optimization.}
+	The temporal filters, spatial filters, and classifier are optimized together using a single
+	loss function. In contrast, the hybrid pipeline constructs WPD and CSP features before sending
+	them to the MLP. The end-to-end setup allows EEGNet to adjust its learned representation in
+	response to the final classification objective.
 	
-	\subsubsection{Best- and Worst-Performing Subjects}
-	Comparing \emph{across} the three panels reveals a consistent subject-level pattern that recurs
-	regardless of the modelling approach used: \textbf{Subject~01} is the single most decodable
-	individual in the dataset -- it achieves the highest in-sample accuracy in panel~(a) ($0.759$),
-	ranks second-best in panel~(b), and is outright best in panel~(c). \textbf{Subject~03} is likewise
-	consistently strong, ranking best-among-unseen in panel~(a) and top-three in both panels~(b) and~(c).
-	At the other extreme, \textbf{Subject~02} is weak in every single panel ($0.316$ unseen in (a),
-	$0.247$ -- the worst score -- in (b), and $0.299$ -- second-worst -- in (c)), and \textbf{Subject~05}
-	is likewise persistently poor ($0.274$ in (a), $0.295$ in (b), and $0.257$ -- the worst score -- in
-	(c)). Because these two subjects score near chance under three independently trained and validated
-	pipelines (a hand-engineered single-subject model, a hand-engineered LOSO model, and an end-to-end
-	deep network), the most plausible explanation is a genuine, subject-intrinsic limitation in the
-	recorded signal quality or the strength of that individual's motor-imagery-related cortical
-	response -- rather than a shortcoming specific to any one feature-extraction or classification
-	method.
+	\item \textbf{Built-in regularization.}
+	The max-norm constraints applied to the depthwise convolution and dense layer provide an
+	additional form of regularization. Combined with dropout, these constraints may help control
+	overfitting given the relatively limited amount of labelled data.
 	
-	\subsubsection{General Performance Pattern}
-	A subtler pattern emerges when comparing the \emph{spread} of the bars, not just their mean height:
-	the standard deviation across subjects actually \emph{increases} from panel (a) to (c) ($0.074
-	\rightarrow 0.125 \rightarrow 0.140$) even as the mean improves. In other words, the accuracy gains
-	achieved by moving from single-subject training, to LOSO, to EEGNet are \emph{not} shared equally by
-	every subject: subjects that were already relatively decodable under the weakest pipeline (S01, S03,
-	S08, S09) gain the most as stronger pipelines are introduced, while the hardest subjects (S02, S05,
-	and to a lesser extent S06) remain anchored close to the $0.25$ chance line across all three charts,
-	essentially unmoved by either LOSO pooling or the switch to EEGNet. This visually reinforces the
-	conclusion drawn from the pairwise-transfer analysis (Section~\ref{sec:results-exp2},
-	Figure~\ref{fig:pairwise-transfer}): part of the cross-subject accuracy gap in this dataset reflects
-	genuine, hard-to-close differences in signal quality between individuals, rather than a limitation
-	that better feature engineering or a better classifier alone can fully resolve.
-	
-	% ============================================================
-	\section{Discussion}
-	\label{sec:discussion}
-	% ============================================================
-	
-	\subsection{Domain Shift Across Subjects}
-	The pairwise transfer-accuracy heatmap (Figure~\ref{fig:pairwise-transfer}) provides the clearest
-	quantitative picture of the inter-subject domain-shift problem in this dataset: within-subject
-	decoding accuracy ($0.656$ mean) is more than two-and-a-half times higher than direct,
-	unadapted cross-subject transfer accuracy ($0.254$ mean, statistically at chance). This gap arises
-	because CSP spatial filters are, by construction, optimized to the specific spatial covariance
-	structure of the class-conditional signal for the subject on which they were fit; that covariance
-	structure is shaped by individual factors -- skull/scalp conductivity, cortical folding, exact
-	electrode positioning relative to the sensorimotor strip, and the subject's own cognitive strategy for
-	performing motor imagery -- none of which are shared across individuals. The WPD statistical features
-	suffer a related, if somewhat less severe, problem: the concentration of signal energy across
-	frequency sub-bands (e.g.\ where in the mu/beta range a given subject's ERD is strongest) is itself
-	subject-dependent.
-	
-	\subsection{Why LOSO Training Helps, But Only Modestly}
-	Pooling eight subjects' data before fitting CSP and the MLP (Experiment~2) forces the spatial filters
-	and classifier decision boundaries to compromise across a range of individual covariance structures
-	rather than over-fitting to just one. This explains the improvement from $0.317$ (single-subject
-	training, tested on unseen subjects) to $0.401$ (LOSO). However, the improvement is modest because
-	averaging over eight heterogeneous individual covariance structures does not produce spatial filters
-	that are well-matched to \emph{any} of them in particular -- it is a compromise solution, not an
-	adapted one. This is consistent with the broader finding in the BCI transfer-learning literature that
-	naive data pooling recovers only part of the gap closed by explicit domain-adaptation techniques (such
-	as the Euclidean Alignment already applied here, or more sophisticated Riemannian-geometry methods).
-	
-	\subsection{Why Deep Representations (EEGNet) Generalize Better}
-	EEGNet's advantage over the hybrid hand-engineered pipeline, even under a curtailed training schedule,
-	likely stems from several compounding factors:
-	\begin{itemize}[leftmargin=1.2cm]
-		\item \textbf{Wider, jointly-learned filter bank.} EEGNet's temporal convolution learns a bank of
-		$F_1=8$ frequency-selective filters directly from the $4$--$38$\,Hz data, rather than relying on a
-		single, manually-chosen $8$--$30$\,Hz band -- it can allocate representational capacity to
-		whichever frequency ranges are most discriminative for the pooled training population, rather than
-		a range chosen \emph{a priori} from domain knowledge.
-		\item \textbf{End-to-end joint optimization.} The temporal and spatial filters in EEGNet are
-		learned jointly with the classifier under a single loss function, whereas the hybrid pipeline
-		fits WPD, CSP, and the MLP in three separate, sequential, unsupervised-then-supervised stages --
-		each stage can only pass along information that survived the previous, independently-optimized
-		stage.
-		\item \textbf{Strong built-in regularization.} The max-norm weight constraints on both the
-		depthwise-convolution and dense layers act as aggressive implicit regularizers well-suited to the
-		modest amount of per-subject training data available, likely improving generalization more than
-		the dropout-only regularization used in the MLP.
-		\item \textbf{Per-trial normalization.} Z-scoring each trial independently (rather than using a
-		training-set-derived global scaler, as in the hybrid pipeline) directly removes inter-subject
-		amplitude/scale differences at the input level, before any learned filtering occurs.
-	\end{itemize}
-	
-	\subsection{Impact of the Computational Constraint on the EEGNet Results}
-	The results in Section~\ref{sec:results-exp3} should be interpreted as a \textbf{conservative lower
-		bound} on EEGNet's true cross-subject performance on this dataset. With only 42 epochs of budget (versus a
-	recommended 300) and a correspondingly shortened early-stopping patience (6 vs.\ 30), several folds
-	(e.g.\ S01, S02) had not yet plateaued in validation accuracy when the epoch budget was exhausted --
-	they were not stopped early by the patience criterion, but simply ran out of allotted epochs. This
-	strongly suggests that a fully-trained EEGNet, given the estimated $7{+}$ hours of additional CPU time
-	that were not available for this project, would likely further widen its already-observed advantage
-	over the hand-engineered baselines, consistent with published EEGNet benchmarks on BCI-IV-2a that
-	typically report higher LOSO accuracies under full training budgets and (in some cases) GPU-accelerated
-	data augmentation.
-	
+	\item \textbf{Per-trial normalization.}
+	EEGNet normalizes each trial independently rather than applying a scaler estimated from the
+	training set. This removes part of the amplitude and scale variation before the signal reaches
+	the learned filters and may therefore make the input representation more consistent across
+	subjects.
+\end{itemize}
+
+These factors are plausible contributors to the observed improvement, but the experiments were
+not designed to isolate their individual effects. The difference between the hybrid pipeline
+and EEGNet should therefore be interpreted as an empirical comparison of the complete pipelines,
+rather than evidence that any single EEGNet component is responsible for the improvement.
+
+\subsection{Impact of the Computational Constraint on the EEGNet Results}
+
+The EEGNet results should be interpreted in the context of the limited training budget described
+in Section~\ref{sec:constraints}. The model was trained for at most 42 epochs with an early-stopping
+patience of 6, rather than the longer 300-epoch configuration considered in the notebook.
+
+Several folds reached the maximum epoch budget without clear evidence of convergence. In particular,
+S01 and S02 trained for the full 42 epochs rather than stopping earlier because of the patience
+criterion. This indicates that, for at least some subjects, the available training budget may not
+have been sufficient to fully optimize the model.
+
+It is therefore reasonable to view the reported EEGNet accuracy as a result obtained under a
+resource-constrained training setup rather than as the maximum performance that the architecture
+could achieve on this dataset. Longer training, together with the available augmentation strategy,
+could potentially improve the results. However, such an improvement was not directly measured in
+this study, so it should be treated as a future possibility rather than a demonstrated outcome.
+The computational limitation is consequently an important part of the context when comparing
+EEGNet with the other approaches used in this report.
 	\subsection{Limitations}
+	
+	There are several limitations that should be considered when interpreting the results of this study:
+	
 	\begin{itemize}[leftmargin=1.2cm]
-		\item Only the \texttt{T} (training) session per subject was usable for EEGNet due to missing
-		external label files for the \texttt{E} (evaluation) sessions, halving the amount of data
-		theoretically available in the original BCI-IV-2a competition protocol.
-		\item The EEGNet training budget was constrained by CPU-only compute, as discussed above; results
-		for EEGNet should not yet be read as reflecting its ceiling performance on this dataset.
-		\item The three experiments use two different pre-processing pipelines with different band-pass
-		ranges, epoch windows, and resampling rates, which somewhat complicates a perfectly like-for-like
-		comparison between the hybrid and deep-learning approaches -- however, this reflects a realistic
-		comparison of complete, self-consistent competing pipelines, not an ablation of a single
-		variable.
-		\item With only nine subjects, per-subject accuracy estimates (and their standard deviations) are
-		based on limited sample sizes; some subject-to-subject differences reported here may not be
-		statistically robust to a larger cohort.
+		\item Only the \texttt{T} (training) session was available for each subject in Experiment~3.
+		The true labels for the \texttt{E} (evaluation) sessions were provided separately and were not
+		available in the working environment. As a result, the experiments used only part of the data
+		available in the original BCI-IV-2a protocol.
+		
+		\item The EEGNet experiment was limited by the available CPU-only hardware. As discussed earlier,
+		this required a shorter training schedule than originally intended, so the reported EEGNet
+		performance should be interpreted as the result of a constrained training setup rather than
+		the maximum performance the architecture might achieve.
+		
+		\item The three experiments do not use exactly the same preprocessing pipeline. They differ in
+		band-pass range, epoch window, sampling rate, and some normalization steps. This means that the
+		comparison between the hybrid and EEGNet approaches is a comparison of complete pipelines rather
+		than a controlled study in which only the classifier is changed. While this makes the comparison
+		less suitable for isolating individual factors, it also reflects the practical differences
+		between the two modelling approaches.
+		
+		\item The dataset contains only nine subjects. As a result, the per-subject results and the
+		standard deviations across subjects are based on a relatively small number of observations.
+		Some of the subject-level differences reported here may therefore change with a larger and more
+		diverse cohort.
 	\end{itemize}
 	
 	% ============================================================
@@ -979,33 +1250,47 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\label{sec:future}
 	% ============================================================
 	
+	Several directions could extend this work and provide a more complete evaluation of
+	cross-subject MI-EEG decoding:
+	
 	\begin{itemize}[leftmargin=1.2cm]
-		\item \textbf{Fully-trained EEGNet.} Re-run the LOSO EEGNet experiment with the originally
-		intended configuration (300 epochs, patience 30, data augmentation enabled) on GPU-accelerated
-		hardware to obtain an unconstrained estimate of the architecture's ceiling performance on this
-		dataset, and to properly benefit from the noise-injection and time-shift augmentation strategies
-		already implemented but disabled in this run.
-		\item \textbf{Transfer learning and calibration.} The fine-tuning experiment
-		(Section~\ref{sec:results-exp3-ft}) already demonstrates the value of brief subject-specific
-		calibration; this could be extended with few-shot / meta-learning approaches (e.g.\
-		model-agnostic meta-learning) explicitly optimized to adapt quickly from very small calibration
-		sets, or with domain-adversarial training that encourages subject-invariant intermediate
-		representations during the main LOSO training phase itself.
-		\item \textbf{Riemannian-geometry methods.} Beyond Euclidean Alignment, Riemannian tangent-space
-		mapping of trial covariance matrices is a well-established family of techniques for
-		cross-subject BCI transfer that could be integrated with either the hybrid CSP pipeline or as a
-		pre-processing step ahead of EEGNet.
-		\item \textbf{Larger and more diverse cohorts.} Validating these findings on additional
-		public motor-imagery datasets (e.g.\ Physionet EEGMMI, OpenBMI) with larger subject pools would
-		clarify how robust the observed generalization ordering (subject-dependent~<~LOSO
-		hybrid~<~LOSO EEGNet~<~fine-tuned EEGNet) is across populations and recording protocols.
-		\item \textbf{Ensembling and hybridization.} Combining the CSP/WPD hand-engineered features with
-		EEGNet's learned representations (e.g.\ as parallel input streams into a joint classifier, or via
-		late-fusion ensembling) may capture complementary information and further improve cross-subject
-		robustness beyond either approach alone.
-		\item \textbf{Using both T and E sessions.} Recovering or re-deriving the true labels for the
-		evaluation (\texttt{E}) sessions would double the amount of per-subject data available for
-		training and calibration, which is likely to particularly benefit the data-hungry EEGNet model.
+		\item \textbf{Fully-trained EEGNet.}
+		The most direct next step is to repeat the LOSO EEGNet experiment using the originally intended
+		training configuration: 300 epochs, patience 30, and the data-augmentation methods already
+		implemented in the notebook. Running the experiment on GPU-accelerated hardware would make this
+		more practical and would provide a fairer estimate of how much performance can be obtained from
+		the architecture when the training budget is less restrictive.
+		
+		\item \textbf{Transfer learning and calibration.}
+		The fine-tuning experiment in Section~\ref{sec:results-exp3-ft} shows that a relatively small
+		amount of target-subject data can improve performance. This idea could be explored more
+		systematically using few-shot or meta-learning methods, where the model is explicitly trained
+		to adapt quickly from small calibration sets. Domain-adversarial training is another possible
+		direction, with the goal of learning intermediate representations that are less dependent on
+		subject identity.
+		
+		\item \textbf{Riemannian-geometry methods.}
+		Beyond Euclidean Alignment, Riemannian approaches based on the geometry of EEG covariance
+		matrices could provide another way to reduce subject-specific differences. These methods could
+		be combined with the existing CSP pipeline or investigated as an input transformation for
+		EEGNet.
+		
+		\item \textbf{Larger and more diverse cohorts.}
+		The findings should be tested on additional public motor-imagery datasets, such as PhysioNet
+		EEGMMI and OpenBMI. Using datasets with more subjects and different recording protocols would
+		help determine whether the performance ordering observed here remains consistent across
+		different populations and experimental settings.
+		
+		\item \textbf{Ensembling and hybridization.}
+		The hand-engineered WPD/CSP features and EEGNet representations may contain complementary
+		information. One possible extension is to combine them in a joint model, for example by using
+		parallel feature streams, or to combine their predictions through late-fusion ensembling.
+		
+		\item \textbf{Using both T and E sessions.}
+		Recovering the labels for the \texttt{E} sessions would provide substantially more data per
+		subject for both training and calibration. This could be particularly useful for EEGNet, given
+		its larger number of learnable parameters and its potential to benefit from additional training
+		examples.
 	\end{itemize}
 	
 	% ============================================================
@@ -1013,24 +1298,42 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\label{sec:conclusion}
 	% ============================================================
 	
-	This report presented a systematic, three-way comparison of cross-subject generalization strategies
-	for EEG motor-imagery classification on the nine-subject BCI Competition IV-2a dataset. A
-	naively-trained, single-subject hybrid WPD-CSP-MLP pipeline achieves strong in-sample accuracy
-	($0.759$) but generalizes poorly to unseen subjects ($0.317 \pm 0.074$, close to chance for several
-	individuals), directly quantifying the severity of inter-subject domain shift in EEG-based BCIs. A
-	Leave-One-Subject-Out cross-validation protocol applied to the same feature family, augmented with
-	Euclidean Alignment, recovers a modest improvement to $0.401 \pm 0.125$. Replacing the hand-engineered
-	feature pipeline with EEGNet, an end-to-end deep convolutional architecture, and evaluating under the
-	identical LOSO protocol, achieves the best cross-subject performance of the three approaches
-	($0.439 \pm 0.140$, Cohen's $\kappa = 0.252$) despite operating under a substantially reduced training
-	budget necessitated by CPU-only compute -- and this figure improves further to $0.476$ with a brief,
-	practical subject-specific fine-tuning step. Taken together, these findings support two central
-	conclusions relevant to the design of subject-independent BCIs: first, that naive pooling of
-	multi-subject training data (LOSO) only partially addresses the inter-subject domain-shift problem
-	inherent to hand-engineered spatial filters such as CSP; and second, that learned, end-to-end deep
-	representations such as EEGNet -- even when computationally constrained -- transfer across subjects
-	more robustly than hand-engineered features, and that inexpensive per-subject calibration remains a
-	highly effective complementary strategy for closing the remaining gap.
+	This report examined three different approaches to cross-subject motor-imagery EEG classification
+	using the nine-subject BCI Competition IV-2a dataset. The first experiment showed that a hybrid
+	WPD-CSP-MLP pipeline can perform reasonably well when trained and tested within the same subject,
+	achieving an accuracy of $0.759$ on the held-out A01T trials. However, when the same model was
+	applied directly to previously unseen subjects, the mean accuracy dropped to
+	$0.317 \pm 0.074$, with several subjects performing close to the $0.25$ chance level. This
+	large gap highlights how difficult it is to transfer a model trained on one person's EEG to
+	another person without calibration.
+	
+	The second experiment addressed this problem using Leave-One-Subject-Out training. By exposing
+	the model to data from multiple subjects during training and adding Euclidean Alignment, the
+	mean accuracy increased to $0.401 \pm 0.125$. The improvement was meaningful but still limited,
+	suggesting that simply pooling data from multiple subjects does not completely remove the
+	differences between their EEG signals.
+	
+	EEGNet performed better in the third experiment, reaching a mean zero-shot LOSO accuracy of
+	$0.439 \pm 0.140$ with a Cohen's $\kappa$ of $0.252$. Despite the restricted training budget
+	caused by CPU-only computation, it achieved the highest zero-shot performance among the three
+	approaches. A short subject-specific fine-tuning stage increased the mean accuracy further to
+	$0.476$, showing that even a relatively small amount of calibration data can improve performance
+	on a previously unseen subject.
+	
+	Overall, the experiments point to two main observations. First, cross-subject variability is a
+	major challenge for MI-EEG classification, and a model that works well for one subject cannot be
+	expected to transfer reliably to another without additional adaptation. Second, exposing the model
+	to multiple subjects and learning the representation jointly with the classification task can
+	improve cross-subject performance, while a small amount of subject-specific calibration provides
+	an additional and practical improvement.
+	
+	At the same time, the results should be viewed in the context of the limitations of this study,
+	particularly the small number of subjects, the use of only the labelled \texttt{T} sessions, and
+	the restricted EEGNet training budget. These limitations leave several important questions open,
+	especially regarding how much the results could improve with longer training, more data, and
+	explicit domain-adaptation or transfer-learning methods. Nevertheless, the experiments provide a
+	clear picture of the main challenge: for MI-EEG, achieving good performance within a subject is
+	considerably easier than building a model that remains reliable when the subject changes.
 	
 	% ============================================================
 	%  BIBLIOGRAPHY
@@ -1081,7 +1384,7 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 		\emph{Educational and Psychological Measurement}, vol.\ 20, no.\ 1, pp.\ 37--46, 1960.
 		
 		\bibitem{paszke2019pytorch}
-		A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen, Z.~Lin, N.~Gimelshein,
+		A.~Paszke, S.~Gross, M.~Massa, L.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen, Z.~Lin, N.~Gimelshein,
 		L.~Antiga, et al.,
 		``PyTorch: An imperative style, high-performance deep learning library,''
 		in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.\ 32, 2019.
@@ -1096,8 +1399,9 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\section{Additional Figures}
 	\label{app:extra-figs}
 	
-	This appendix collects supplementary diagnostic figures referenced in the main text but not central
-	to the primary results narrative.
+	This appendix contains supplementary diagnostic figures referenced in the main text. These figures
+	provide additional information about the preprocessing and modelling steps but are not essential
+	to the main results.
 	
 	\subsection{Experiment 1 -- Supplementary Figures}
 	
@@ -1232,4 +1536,5 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 		\label{fig:comprehensive-dashboard}
 	\end{figure}
 	
-\end{document}
+	\end{document}
+	
