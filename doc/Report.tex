@@ -801,6 +801,98 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	significantly constrained training budget, as discussed next.
 	
 	% ============================================================
+	\subsection{Side-by-Side Comparison of the Three Final Per-Subject Accuracy Charts}
+	\label{sec:side-by-side}
+	% ============================================================
+	
+	Each of the three notebooks concludes with its own summary chart plotting per-subject accuracy
+	across all nine subjects. Figure~\ref{fig:three-final-charts} places these three charts side by side,
+	in the same horizontal row, with a short explanation directly underneath each one.
+	
+	\begin{figure}[H]
+		\centering
+		\begin{minipage}[t]{0.32\linewidth}
+			\centering
+			\includegraphics[width=\linewidth]{../figures/overall_generalization_summary.png}\\[0.25cm]
+			{\small\textbf{(a) Experiment 1 -- Subject-Dependent}}\\[0.15cm]
+			{\footnotesize
+				Naive pipeline trained on Subject~A01T only, then tested on all nine subjects. A01T (in-sample)
+				scores $0.759$; the eight unseen subjects average $0.317 \pm 0.074$. Best unseen: A03T ($0.431$).
+				Worst: A06T and A09T (tied, $0.253$, at chance).
+			}
+		\end{minipage}
+		\hfill
+		\begin{minipage}[t]{0.32\linewidth}
+			\centering
+			\includegraphics[width=\linewidth]{../figures/subject_accuracy_percent_mean_only.png}\\[0.25cm]
+			{\small\textbf{(b) Experiment 2 -- LOSO Hybrid WPD-CSP-MLP}}\\[0.15cm]
+			{\footnotesize
+				Leave-One-Subject-Out accuracy for the hand-engineered WPD+CSP+MLP pipeline, all nine subjects
+				now pooled during training. Mean accuracy $0.401 \pm 0.125$. Best: S08 ($0.569$), closely followed
+				by S01 ($0.566$). Worst: S02 ($0.247$, at chance).
+			}
+		\end{minipage}
+		\hfill
+		\begin{minipage}[t]{0.32\linewidth}
+			\centering
+			\includegraphics[width=\linewidth]{../figures/final_loso_test_summary.png}\\[0.25cm]
+			{\small\textbf{(c) Experiment 3 -- LOSO EEGNet}}\\[0.15cm]
+			{\footnotesize
+				Leave-One-Subject-Out accuracy for the end-to-end EEGNet classifier, same protocol as (b) but with
+				learned rather than hand-engineered features. Mean accuracy $0.439 \pm 0.140$ ($\kappa = 0.252$).
+				Best: S01 ($0.660$). Worst: S05 ($0.257$, at chance), with S02 close behind ($0.299$).
+			}
+		\end{minipage}
+		\caption{The three end-of-notebook per-subject accuracy summary charts, arranged side by side, with
+			a brief explanation directly beneath each: (a) the naive single-subject-trained pipeline, (b) the
+			LOSO Hybrid WPD-CSP-MLP classifier, and (c) the LOSO EEGNet classifier. All three plot the same nine
+			subjects, allowing a direct visual comparison of both the overall accuracy level and the
+			subject-to-subject pattern across approaches.}
+		\label{fig:three-final-charts}
+	\end{figure}
+	
+	\subsubsection{Overall Results}
+	Read together, the three panels visually confirm the ordering already established in
+	Table~\ref{tab:overall-comparison}: the bars in panel~(a) sit lowest and closest to the $0.25$
+	chance line for every unseen subject, panel~(b) shows a broadly higher bar for almost every subject
+	once all nine subjects are pooled during training (LOSO), and panel~(c) shows the highest bars
+	overall, with several subjects (S01, S03, S09) clearing $0.55$--$0.66$ accuracy under EEGNet -- a
+	level neither hand-engineered pipeline reaches for any subject except the in-sample A01T bar in
+	panel~(a). The mean accuracy rises step-by-step from left to right ($0.317 \rightarrow 0.401
+	\rightarrow 0.439$), and this improvement is visible as a general upward shift of the whole bar
+	pattern rather than a change concentrated in one or two subjects.
+	
+	\subsubsection{Best- and Worst-Performing Subjects}
+	Comparing \emph{across} the three panels reveals a consistent subject-level pattern that recurs
+	regardless of the modelling approach used: \textbf{Subject~01} is the single most decodable
+	individual in the dataset -- it achieves the highest in-sample accuracy in panel~(a) ($0.759$),
+	ranks second-best in panel~(b), and is outright best in panel~(c). \textbf{Subject~03} is likewise
+	consistently strong, ranking best-among-unseen in panel~(a) and top-three in both panels~(b) and~(c).
+	At the other extreme, \textbf{Subject~02} is weak in every single panel ($0.316$ unseen in (a),
+	$0.247$ -- the worst score -- in (b), and $0.299$ -- second-worst -- in (c)), and \textbf{Subject~05}
+	is likewise persistently poor ($0.274$ in (a), $0.295$ in (b), and $0.257$ -- the worst score -- in
+	(c)). Because these two subjects score near chance under three independently trained and validated
+	pipelines (a hand-engineered single-subject model, a hand-engineered LOSO model, and an end-to-end
+	deep network), the most plausible explanation is a genuine, subject-intrinsic limitation in the
+	recorded signal quality or the strength of that individual's motor-imagery-related cortical
+	response -- rather than a shortcoming specific to any one feature-extraction or classification
+	method.
+	
+	\subsubsection{General Performance Pattern}
+	A subtler pattern emerges when comparing the \emph{spread} of the bars, not just their mean height:
+	the standard deviation across subjects actually \emph{increases} from panel (a) to (c) ($0.074
+	\rightarrow 0.125 \rightarrow 0.140$) even as the mean improves. In other words, the accuracy gains
+	achieved by moving from single-subject training, to LOSO, to EEGNet are \emph{not} shared equally by
+	every subject: subjects that were already relatively decodable under the weakest pipeline (S01, S03,
+	S08, S09) gain the most as stronger pipelines are introduced, while the hardest subjects (S02, S05,
+	and to a lesser extent S06) remain anchored close to the $0.25$ chance line across all three charts,
+	essentially unmoved by either LOSO pooling or the switch to EEGNet. This visually reinforces the
+	conclusion drawn from the pairwise-transfer analysis (Section~\ref{sec:results-exp2},
+	Figure~\ref{fig:pairwise-transfer}): part of the cross-subject accuracy gap in this dataset reflects
+	genuine, hard-to-close differences in signal quality between individuals, rather than a limitation
+	that better feature engineering or a better classifier alone can fully resolve.
+	
+	% ============================================================
 	\section{Discussion}
 	\label{sec:discussion}
 	% ============================================================
@@ -946,20 +1038,26 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 	\newpage
 	\begin{thebibliography}{99}
 		
-		\bibitem{brunner2008bci}
-		C.~Brunner, R.~Leeb, G.~M{\"u}ller-Putz, A.~Schl{\"o}gl, and G.~Pfurtscheller,
-		\emph{BCI Competition 2008 -- Graz Data Set A}, Institute for Knowledge Discovery, Graz University of
-		Technology, 2008.
-		
 		\bibitem{pfurtscheller1999}
 		G.~Pfurtscheller and F.~H.\ Lopes da Silva,
 		``Event-related EEG/MEG synchronization and desynchronization: basic principles,''
 		\emph{Clinical Neurophysiology}, vol.\ 110, no.\ 11, pp.\ 1842--1857, 1999.
 		
-		\bibitem{ramoser2000csp}
-		H.~Ramoser, J.~M{\"u}ller-Gerking, and G.~Pfurtscheller,
-		``Optimal spatial filtering of single trial EEG during imagined hand movement,''
-		\emph{IEEE Transactions on Rehabilitation Engineering}, vol.\ 8, no.\ 4, pp.\ 441--446, 2000.
+		\bibitem{lawhern2018eegnet}
+		V.~J.\ Lawhern, A.~J.\ Solon, N.~R.\ Waytowich, S.~M.\ Gordon, C.~P.\ Hung, and B.~J.\ Lance,
+		``EEGNet: a compact convolutional neural network for EEG-based brain-computer interfaces,''
+		\emph{Journal of Neural Engineering}, vol.\ 15, no.\ 5, p.\ 056013, 2018.
+		
+		\bibitem{brunner2008bci}
+		C.~Brunner, R.~Leeb, G.~M{\"u}ller-Putz, A.~Schl{\"o}gl, and G.~Pfurtscheller,
+		\emph{BCI Competition 2008 -- Graz Data Set A}, Institute for Knowledge Discovery, Graz University of
+		Technology, 2008.
+		
+		\bibitem{gramfort2013mne}
+		A.~Gramfort, M.~Luessi, E.~Larson, D.~A.\ Engemann, D.~Strohmeier, C.~Brodbeck, R.~Goj, M.~Jas,
+		T.~Brooks, L.~Parkkonen, and M.~H{\"a}m{\"a}l{\"a}inen,
+		``MEG and EEG data analysis with MNE-Python,''
+		\emph{Frontiers in Neuroscience}, vol.\ 7, p.\ 267, 2013.
 		
 		\bibitem{ang2008fbcsp}
 		K.~K.\ Ang, Z.~Y.\ Chin, H.~Zhang, and C.~Guan,
@@ -967,26 +1065,20 @@ urlcolor=blue!50!black, linktoc=all]{hyperref}
 		in \emph{Proc.\ IEEE International Joint Conference on Neural Networks (IJCNN)}, 2008, pp.\
 		2390--2397.
 		
-		\bibitem{lawhern2018eegnet}
-		V.~J.\ Lawhern, A.~J.\ Solon, N.~R.\ Waytowich, S.~M.\ Gordon, C.~P.\ Hung, and B.~J.\ Lance,
-		``EEGNet: a compact convolutional neural network for EEG-based brain-computer interfaces,''
-		\emph{Journal of Neural Engineering}, vol.\ 15, no.\ 5, p.\ 056013, 2018.
-		
 		\bibitem{he2020ea}
 		H.~He and D.~Wu,
 		``Transfer learning for brain-computer interfaces: A Euclidean space data alignment approach,''
 		\emph{IEEE Transactions on Biomedical Engineering}, vol.\ 67, no.\ 2, pp.\ 399--410, 2020.
 		
+		\bibitem{ramoser2000csp}
+		H.~Ramoser, J.~M{\"u}ller-Gerking, and G.~Pfurtscheller,
+		``Optimal spatial filtering of single trial EEG during imagined hand movement,''
+		\emph{IEEE Transactions on Rehabilitation Engineering}, vol.\ 8, no.\ 4, pp.\ 441--446, 2000.
+		
 		\bibitem{cohen1960kappa}
 		J.~Cohen,
 		``A coefficient of agreement for nominal scales,''
 		\emph{Educational and Psychological Measurement}, vol.\ 20, no.\ 1, pp.\ 37--46, 1960.
-		
-		\bibitem{gramfort2013mne}
-		A.~Gramfort, M.~Luessi, E.~Larson, D.~A.\ Engemann, D.~Strohmeier, C.~Brodbeck, R.~Goj, M.~Jas,
-		T.~Brooks, L.~Parkkonen, and M.~H{\"a}m{\"a}l{\"a}inen,
-		``MEG and EEG data analysis with MNE-Python,''
-		\emph{Frontiers in Neuroscience}, vol.\ 7, p.\ 267, 2013.
 		
 		\bibitem{paszke2019pytorch}
 		A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen, Z.~Lin, N.~Gimelshein,
