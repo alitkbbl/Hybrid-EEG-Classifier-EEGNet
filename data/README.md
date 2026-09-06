@@ -6,6 +6,7 @@ This project uses the **BCI Competition IV, Dataset 2a** for motor imagery EEG c
 
 The raw EEG recordings are stored in:
 
+
 ```text
 data/
 └── raw/
