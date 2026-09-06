@@ -26,7 +26,13 @@ Across the three notebooks, the same core question is asked in three progressive
 
 > 📄 **Full methodology, derivations, and discussion:** **[Read the complete report →](doc/report.pdf)**
 
-> 🔗 **Quick links:** [Dataset & download instructions](data/README.md) · [Notebook 1](notebooks/Hybrid-EEG-Classifier-WPD-CSP.ipynb) · [Notebook 2](notebooks/Hybrid-EEG-Classifier-WPD-CSP-LOSO.ipynb) · [Notebook 3](notebooks/EEGNet-LOSO.ipynb) · [EEGNet architecture reference](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)
+### 🔗 Quick Links
+
+- 📊 **[Dataset & Download Instructions](data/README.md)** — per-subject details and how to obtain the raw `.gdf` files.
+- 📓 **[Notebook 1 — Subject-Dependent Baseline](notebooks/Hybrid-EEG-Classifier-WPD-CSP.ipynb)** — trained and tested on Subject 1 only.
+- 📓 **[Notebook 2 — LOSO Hybrid Pipeline](notebooks/Hybrid-EEG-Classifier-WPD-CSP-LOSO.ipynb)** — same algorithm, evaluated with 9-fold LOSO cross-validation.
+- 📓 **[Notebook 3 — LOSO EEGNet](notebooks/EEGNet-LOSO.ipynb)** — end-to-end deep learning under the same LOSO protocol.
+- 🧠 **[EEGNet Architecture Reference](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)** — braindecode documentation for the model used in Notebook 3.
 
 ---
 
@@ -123,26 +129,28 @@ Replaces the entire hand-engineered feature pipeline with **[EEGNet](https://bra
 <th align="center">Notebook 3<br>LOSO EEGNet</th>
 </tr>
 <tr>
-<td><img src="figures/cross_subject_generalization.png" width="280"/></td>
-<td><img src="figures/loso_accuracy_by_subject.png" width="280"/></td>
+<td><img src="figures/overall_generalization_summary.png" width="280"/></td>
+<td><img src="figures/subject_accuracy_percent_mean_only.png" width="280"/></td>
 <td><img src="figures/final_loso_test_summary.png" width="280"/></td>
 </tr>
 </table>
 
-The story across the three charts is monotonic: naive single-subject training generalizes worst (blue = trained subject, red = unseen, most barely above the chance line); pooling all subjects via LOSO with the *same* hand-engineered features recovers a real but modest improvement; and replacing those features with EEGNet's learned representations — even under a constrained training budget — pushes every subject's accuracy further above the hybrid-model mean (dashed reference line at 40%) and the 25% chance level.
+The story across the three charts is monotonic: Notebook 1's summary shows just how sharply accuracy falls once the model leaves its trained subject, plotted against reference lines for chance level, in-sample accuracy, and the mean unseen-subject accuracy; Notebook 2's summary shows the modest but real lift LOSO cross-validation provides across all nine subjects with the same hand-engineered features; and Notebook 3's summary shows EEGNet's zero-shot LOSO accuracy sitting consistently above both the hybrid-model mean and the 25% chance line, even under a constrained training budget.
+
+**Why 47.6% matters more than the raw number suggests.** It's nearly double the 25% chance level, achieved with EEGNet trained on only ~14% of its recommended epoch budget on CPU-only hardware — and it still has to absorb two subjects (S02, S05) that are intrinsically hard to decode under *every* pipeline tested in this project. Given that a fully-trained EEGNet (300 epochs, ideally GPU-accelerated) was estimated to need 7+ hours versus the roughly 1 hour actually available, this fine-tuned result should be read as a conservative floor on the architecture's real potential on this dataset, not its ceiling — and it already outperforms both hand-engineered baselines.
 
 ### The Domain-Shift Problem, Visualized
 
 <p align="center">
   <img src="figures/pairwise_transfer_heatmap.png" width="620" alt="Pairwise cross-subject transfer accuracy heatmap"><br>
-  <sub><b>Pairwise Transfer Heatmap.</b> Diagonal = within-subject held-out accuracy (mean 65.6%); off-diagonal = direct subject-to-subject transfer (mean 25.4%, statistically at chance). This is the clearest evidence in the study that CSP spatial filters fit on one subject essentially do not transfer to another without pooling or alignment.</sub>
+  <sub><b>Pairwise Transfer Heatmap (CSP + Logistic Regression).</b> The bright diagonal — where a model is trained and tested on the <i>same</i> subject — reaches as high as 0.83 (S03) and 0.80 (S08), for a mean of 65.6%. The moment that same model is tested on a <i>different</i> subject, the near-uniform dark off-diagonal shows accuracy collapsing to essentially chance (mean 25.4%) almost everywhere on the grid — a few pairs, like training on S07 and testing on S02 (0.13), even fall <i>below</i> chance. Notice also that S05's own diagonal value (0.46) is the lowest of any subject, an early warning sign of the difficulty this subject causes throughout the rest of the project.</sub>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="figures/confusion_matrix_pooled.png" width="480" alt="Pooled confusion matrix across all nine LOSO folds"><br>
-  <sub><b>Pooled LOSO Confusion Matrix.</b> Row-normalized confusion matrix aggregated across all nine LOSO folds (Hybrid WPD-CSP-MLP). Left/Right Hand trials are decoded more reliably than Feet and Tongue, consistent with the stronger, more lateralized ERD associated with hand motor imagery — a pattern that recurs in the EEGNet results too.</sub>
+  <img src="figures/csp_topomaps.png" width="750" alt="CSP spatial pattern topographies per WPD sub-band"><br>
+  <sub><b>CSP Spatial Patterns per WPD Sub-band (Subject 1).</b> Each row is one WPD frequency sub-band and each column is one of the top-4 CSP spatial components. Rather than converging on clean, symmetric dipoles centered over C3/C4 as textbook sensorimotor ERD would predict, several components drift off-target — e.g. the sharp, focal left-frontal hotspot in component 2 of the 7.8–15.6 Hz band, or the strong posterior activation dominating component 2 of the 15.6–23.4 Hz band. This is a useful diagnostic: on a single subject's limited data, CSP doesn't always isolate "pure" motor-cortex signal, and part of what the downstream MLP learns is spatial variance from non-motor sources — one contributing factor behind Notebook 1's poor cross-subject generalization.</sub>
 </p>
 
 ### 🔊 A Note on Noisy Subjects
