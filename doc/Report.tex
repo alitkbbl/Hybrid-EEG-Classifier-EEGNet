@@ -1217,81 +1217,8 @@ could potentially improve the results. However, such an improvement was not dire
 this study, so it should be treated as a future possibility rather than a demonstrated outcome.
 The computational limitation is consequently an important part of the context when comparing
 EEGNet with the other approaches used in this report.
-	\subsection{Limitations}
+
 	
-	There are several limitations that should be considered when interpreting the results of this study:
-	
-	\begin{itemize}[leftmargin=1.2cm]
-		\item Only the \texttt{T} (training) session was available for each subject in Experiment~3.
-		The true labels for the \texttt{E} (evaluation) sessions were provided separately and were not
-		available in the working environment. As a result, the experiments used only part of the data
-		available in the original BCI-IV-2a protocol.
-		
-		\item The EEGNet experiment was limited by the available CPU-only hardware. As discussed earlier,
-		this required a shorter training schedule than originally intended, so the reported EEGNet
-		performance should be interpreted as the result of a constrained training setup rather than
-		the maximum performance the architecture might achieve.
-		
-		\item The three experiments do not use exactly the same preprocessing pipeline. They differ in
-		band-pass range, epoch window, sampling rate, and some normalization steps. This means that the
-		comparison between the hybrid and EEGNet approaches is a comparison of complete pipelines rather
-		than a controlled study in which only the classifier is changed. While this makes the comparison
-		less suitable for isolating individual factors, it also reflects the practical differences
-		between the two modelling approaches.
-		
-		\item The dataset contains only nine subjects. As a result, the per-subject results and the
-		standard deviations across subjects are based on a relatively small number of observations.
-		Some of the subject-level differences reported here may therefore change with a larger and more
-		diverse cohort.
-	\end{itemize}
-	
-	% ============================================================
-	\section{Future Work}
-	\label{sec:future}
-	% ============================================================
-	
-	Several directions could extend this work and provide a more complete evaluation of
-	cross-subject MI-EEG decoding:
-	
-	\begin{itemize}[leftmargin=1.2cm]
-		\item \textbf{Fully-trained EEGNet.}
-		The most direct next step is to repeat the LOSO EEGNet experiment using the originally intended
-		training configuration: 300 epochs, patience 30, and the data-augmentation methods already
-		implemented in the notebook. Running the experiment on GPU-accelerated hardware would make this
-		more practical and would provide a fairer estimate of how much performance can be obtained from
-		the architecture when the training budget is less restrictive.
-		
-		\item \textbf{Transfer learning and calibration.}
-		The fine-tuning experiment in Section~\ref{sec:results-exp3-ft} shows that a relatively small
-		amount of target-subject data can improve performance. This idea could be explored more
-		systematically using few-shot or meta-learning methods, where the model is explicitly trained
-		to adapt quickly from small calibration sets. Domain-adversarial training is another possible
-		direction, with the goal of learning intermediate representations that are less dependent on
-		subject identity.
-		
-		\item \textbf{Riemannian-geometry methods.}
-		Beyond Euclidean Alignment, Riemannian approaches based on the geometry of EEG covariance
-		matrices could provide another way to reduce subject-specific differences. These methods could
-		be combined with the existing CSP pipeline or investigated as an input transformation for
-		EEGNet.
-		
-		\item \textbf{Larger and more diverse cohorts.}
-		The findings should be tested on additional public motor-imagery datasets, such as PhysioNet
-		EEGMMI and OpenBMI. Using datasets with more subjects and different recording protocols would
-		help determine whether the performance ordering observed here remains consistent across
-		different populations and experimental settings.
-		
-		\item \textbf{Ensembling and hybridization.}
-		The hand-engineered WPD/CSP features and EEGNet representations may contain complementary
-		information. One possible extension is to combine them in a joint model, for example by using
-		parallel feature streams, or to combine their predictions through late-fusion ensembling.
-		
-		\item \textbf{Using both T and E sessions.}
-		Recovering the labels for the \texttt{E} sessions would provide substantially more data per
-		subject for both training and calibration. This could be particularly useful for EEGNet, given
-		its larger number of learnable parameters and its potential to benefit from additional training
-		examples.
-	\end{itemize}
 	
 	% ============================================================
 	\section{Conclusion}
