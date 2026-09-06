@@ -1,13 +1,9 @@
-# EEG Motor Imagery Classifier: WPD + CSP + MLP vs. EEGNet
+# Hybrid EEG Motor Imagery Classifier: WPD + CSP + MLP vs. EEGNet
 
 [![Motor Imagery](https://img.shields.io/badge/Motor%20Imagery-EEG%20BCI-6A1B9A)](#)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](#)
-[![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)](#)
-[![PyTorch](https://img.shields.io/badge/PyTorch-Deep%20Learning-EE4C2C?logo=pytorch&logoColor=white)](#)
 [![MNE-Python](https://img.shields.io/badge/MNE--Python-EEG%20Preprocessing-1565C0)](#)
 [![EEGNet](https://img.shields.io/badge/EEGNet-Compact%20ConvNet-00897B)](#)
 [![LOSO](https://img.shields.io/badge/Validation-Leave--One--Subject--Out-D32F2F)](#)
-[![4-Class Classification](https://img.shields.io/badge/4--Class%20MI-Left%20%2F%20Right%20%2F%20Feet%20%2F%20Tongue-FF6F00)](#)
 
 A systematic, three-stage comparative study of **cross-subject generalization** in EEG-based motor imagery classification — from a naive single-subject baseline, through Leave-One-Subject-Out (LOSO) cross-validation of a hand-engineered pipeline, to an end-to-end deep learning approach with **EEGNet**.
 
