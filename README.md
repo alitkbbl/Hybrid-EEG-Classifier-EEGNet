@@ -21,18 +21,14 @@ Across the three notebooks, the same core question is asked in three progressive
 | **LOSO EEGNet (fine-tuned)** | LOSO + 50% calibration | **47.6%** | **+22.6 pts** |
 
 > 📄 **Full methodology, derivations, and discussion:** **[Read the complete report →](doc/report.pdf)**
-
-### 🔗 Quick Links
-
-- 📊 **[Dataset & Download Instructions](data/README.md)** — per-subject details and how to obtain the raw `.gdf` files.
-- 📓 **[Notebook 1 — Subject-Dependent Baseline](notebooks/Hybrid-EEG-Classifier-WPD-CSP.ipynb)** — trained and tested on Subject 1 only.
-- 📓 **[Notebook 2 — LOSO Hybrid Pipeline](notebooks/Hybrid-EEG-Classifier-WPD-CSP-LOSO.ipynb)** — same algorithm, evaluated with 9-fold LOSO cross-validation.
-- 📓 **[Notebook 3 — LOSO EEGNet](notebooks/EEGNet-LOSO.ipynb)** — end-to-end deep learning under the same LOSO protocol.
-- 🧠 **[EEGNet Architecture Reference](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)** — braindecode documentation for the model used in Notebook 3.
+> 
+> 📁 **Dataset & download instructions:** **[Access data & GDF files →](data/README.md)**
+> 
+> 🔬 **EEGNet architecture reference:** **[View Braindecode documentation →](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)**
 
 ---
 
-## 🧠 The Core Problem: Inter-Subject Variability
+## 🧬 The Core Problem: Inter-Subject Variability
 
 A classifier calibrated on one person's EEG encodes spatial filters and decision boundaries tied to *that individual's* anatomy and cognitive strategy — cortical folding, skull thickness, electrode placement, and the subject's own way of "imagining" a movement all differ from person to person. Applied to a new subject with **zero calibration**, performance frequently collapses toward chance level. This is the central obstacle to "plug-and-play" BCIs, and it's the obstacle this project measures, quantifies, and attempts to close.
 
@@ -54,7 +50,7 @@ Hybrid-EEG-Classifier-EEGNet/
 │   ├── raw/
 │   └── README.md          # Subject info + dataset download instructions
 ├── doc/
-│   └── report.pdf          # Full methodology, results, and discussion
+│   └── Report.pdf          # Full methodology, results, and discussion
 ├── figures/
 ├── models/
 ├── notebooks/
@@ -68,7 +64,7 @@ Hybrid-EEG-Classifier-EEGNet/
 
 ---
 
-## 📊 Dataset
+## 📁 Dataset
 
 All three notebooks use the **[BCI Competition IV, Dataset 2a](https://www.bbci.de/competition/iv/#dataset2a)** (Brunner et al., 2008) — 9 subjects, 4 balanced motor imagery classes (left hand, right hand, feet, tongue), 22 EEG + 3 EOG channels at 250 Hz.
 
@@ -105,16 +101,17 @@ The exact same WPD + CSP + MLP algorithm, but re-evaluated under a proper **Leav
 
 Replaces the entire hand-engineered feature pipeline with **[EEGNet](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)**, a compact end-to-end convolutional architecture purpose-built for EEG decoding, evaluated under the identical 9-fold LOSO protocol. EEGNet learns its own temporal filters (analogous to band-pass filtering) and spatial filters (analogous to CSP) directly from data, with no hand-engineered priors at all.
 
-- 🏆 **Best cross-subject performance of all three approaches**: **43.9% ± 14.0%** mean LOSO accuracy, Cohen's **κ = 0.252**.
+- **Best cross-subject performance of all three approaches**: **43.9% ± 14.0%** mean LOSO accuracy, Cohen's **κ = 0.252**.
 - 🎯 A brief subject-specific fine-tuning step (10 epochs on just 50% of the target subject's own trials) pushes mean accuracy further to **47.6%**.
 
-> ⚠️ **Hardware constraints on Notebook 3.** All training in this project ran on **CPU only** — no CUDA-capable GPU was available. EEGNet's recommended training schedule is **~300 epochs**, which was estimated to take **7+ hours** on this hardware. That was not feasible, so training was run with a **drastically reduced budget of 42 epochs** (patience = 6) — and even *this* reduced run took **over 1 hour**. Several LOSO folds (e.g. Subjects 1 and 2) had not yet plateaued in validation accuracy when the epoch budget ran out, meaning the results reported here are a **conservative lower bound**: EEGNet already beats both hand-engineered pipelines under this constraint, and a full training budget would very likely widen that gap further.
+> ⚠️ **Hardware Constraint:** Due to CPU-only training, EEGNet was trained for only **40 epochs** (instead of the recommended 300+), meaning the model was **under-trained**. Despite this, it still outperforms the hand-engineered pipelines.
+
 
 ---
 
 ## 📈 Results
 
-> 📄 For full per-subject tables, per-class precision/recall/F1, confusion matrices, and the complete discussion, see the **[full project report](doc/report.pdf)**.
+> 📄 For full per-subject tables, per-class precision/recall/F1, confusion matrices, and the complete discussion, see the **[full project report](doc/Report.pdf)**.
 
 ### Final Cross-Subject Accuracy — All Three Notebooks
 
@@ -159,33 +156,6 @@ Not all subjects are equally decodable, and this pattern is **consistent across 
 
 ---
 
-## ⚙️ Installation & Usage
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/alitkbbl/Hybrid-EEG-Classifier-EEGNet
-cd Hybrid-EEG-Classifier-EEGNet
-```
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Download the dataset
-See **[`data/README.md`](data/README.md)** for per-subject `.gdf` download links and where to place them (`data/raw/`).
-
-### 4. Run the notebooks (in order)
-```bash
-jupyter notebook notebooks/Hybrid-EEG-Classifier-WPD-CSP.ipynb        # Notebook 1: subject-dependent baseline
-jupyter notebook notebooks/Hybrid-EEG-Classifier-WPD-CSP-LOSO.ipynb   # Notebook 2: LOSO hybrid pipeline
-jupyter notebook notebooks/EEGNet-LOSO.ipynb                          # Notebook 3: LOSO EEGNet
-```
-
-> 💡 Notebook 3 (EEGNet) is by far the most compute-intensive. On CPU-only hardware, expect the reduced-epoch LOSO run to take **over an hour**; see the hardware note above before adjusting `EPOCHS`/`PATIENCE`.
-
----
-
 ## 🔗 References
 
 - Ang, K. K., Chin, Z. Y., Zhang, H., & Guan, C. (2008). *Filter Bank Common Spatial Pattern (FBCSP) in Brain-Computer Interface.* IEEE IJCNN.
@@ -195,4 +165,4 @@ jupyter notebook notebooks/EEGNet-LOSO.ipynb                          # Notebook
 - He, H., & Wu, D. (2020). *Transfer learning for brain-computer interfaces: A Euclidean space data alignment approach.* IEEE Trans. Biomedical Engineering, 67(2), 399–410.
 - Gramfort, A. et al. (2013). *MEG and EEG data analysis with MNE-Python.* Frontiers in Neuroscience, 7, 267.
 
-> 📄 For the complete derivations, per-fold tables, and full discussion behind every number in this README: **[Read the full project report →](doc/report.pdf)**
+> 📄 For the complete derivations, per-fold tables, and full discussion behind every number in this README: **[Read the full project report →](doc/Report.pdf)**
