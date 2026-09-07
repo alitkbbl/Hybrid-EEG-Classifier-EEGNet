@@ -20,7 +20,6 @@ Across the three notebooks, the same core question is examined with increasing m
 Rather than optimizing for within-subject accuracy alone, this study evaluates how well each approach generalizes to unseen subjects under a consistent evaluation protocol.
 
 
-
 | Approach                        | Validation Scheme         | Mean Cross-Subject Accuracy | vs. Chance (25%) |
 | ------------------------------- | ------------------------- | --------------------------- | ---------------- |
 | Subject-dependent (WPD+CSP+MLP) | Zero-calibration transfer | 31.7% ± 7.4%                | +6.7 pts         |
