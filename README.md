@@ -186,5 +186,3 @@ These patterns suggest that subject-level signal quality and variability play an
 * Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon, S. M., Hung, C. P., & Lance, B. J. (2018). *EEGNet: a compact convolutional neural network for EEG-based brain-computer interfaces.* Journal of Neural Engineering, 15(5), 056013. — [Architecture reference](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)
 * He, H., & Wu, D. (2020). *Transfer learning for brain-computer interfaces: A Euclidean space data alignment approach.* IEEE Trans. Biomedical Engineering, 67(2), 399–410.
 * Gramfort, A. et al. (2013). *MEG and EEG data analysis with MNE-Python.* Frontiers in Neuroscience, 7, 267.
-
-> 📄 For the complete derivations, per-fold tables, and full discussion behind every result in this README: **[Read the full project report →](doc/Report.pdf)**
