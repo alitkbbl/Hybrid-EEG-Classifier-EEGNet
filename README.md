@@ -29,6 +29,8 @@ Rather than optimizing for within-subject accuracy alone, this study evaluates h
 
 > 📄 **Full methodology, derivations, and discussion:** **[Read the complete report →](doc/Report.pdf)**
 >
+> 📓 **Notebook guide & EEGNet pipeline:** **[Explore the notebooks →](notebooks/README.md)**
+>
 > 📁 **Dataset & download instructions:** **[Access data & GDF files →](data/README.md)**
 >
 > 🔬 **EEGNet architecture reference:** **[View Braindecode documentation →](https://braindecode.org/1.4/generated/braindecode.models.EEGNet.html)**
